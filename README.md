@@ -26,3 +26,15 @@ On top of 237.ino you can choose whatever sensor support will be included by def
 # Sensors Support
 - 9960
 - HMMD
+
+# Development Setup PC
+
+- Arduino Uno R4 Wifi
+- Supported Sensor
+- Wifi Network
+- Client PC with rtpMidi software and Midiview Software
+
+## rtpMidi Setup
+- Create a Session with a name
+- Create a remote Peer with the arduino ip address
+- Enable the session and connect the arduino

@@ -19,8 +19,8 @@ bool sensor_enabled = true;
 
 // WiFi Stuff
 
-char client_ssid[] = "La Station"; 
-char client_pass[] = "Valangines98";  
+char client_ssid[] = "Truc portable"; 
+char client_pass[] = "1234567890";  
 bool wifi_connected = false;
 
 // Storage for UI and midi
@@ -38,7 +38,7 @@ EEPROMStorage<uint16_t> cc_smax(cc_smin.nextAddress(), 300);
 EEPROMStorage<uint16_t> cc_tmin(cc_smax.nextAddress(), 0);
 EEPROMStorage<uint16_t> cc_tmax(cc_tmin.nextAddress(), 127);
 
-typedef struct 
+typedef struct
 {
   uint16_t min;
   uint16_t max;
