@@ -14,6 +14,12 @@
 #include <AppleMIDI.h>
 #include "ledmatrix.h"
 
+
+uint16_t last_cc = 0;
+int last_note = 0;
+int last_last_note = 0;
+movingAvg moving_avg(3);
+
 String name = "A" + String(_UID);
 
 APPLEMIDI_CREATE_INSTANCE(WiFiUDP, MIDI, name.c_str(), DEFAULT_CONTROL_PORT);
@@ -42,6 +48,8 @@ void midi_start(){
 
 void midi_setup()
 {
+
+  moving_avg.begin();
 
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, LOW);
@@ -142,8 +150,74 @@ void midi_loop()
 void send_note(int note, int vel = 127, int channel = 1, int duration = 5){
   if(debug_midi) Serial.println("Send " + String(note));
   MIDI.sendNoteOn(note, vel, channel);
-  delay(duration);
-  MIDI.sendNoteOff(note, vel, channel);
+  //delay(duration);
+  //MIDI.sendNoteOff(note, vel, channel);
+}
+
+
+void send_note_from_dist(uint16_t dist){
+  if(debug_raw) Serial.println("dist: " + String(dist));
+  
+  Note near = note_near.get()
+  Note near = note_far.get()
+
+  if(dist <= near.max){
+    if(last_note != near.note){
+      send_note(near.note, 127, midi_channel);
+      last_note = near.note;
+    }
+  }else
+
+  if(dist >= far.min){
+    if(last_note != far.note){
+      send_note(far.note, 127, midi_channel);
+      last_note = far.note;
+    }
+  }else
+
+  if(dist > cc_smin && dist < cc_smax){
+    uint16_t avg = moving_avg.reading(dist);
+    if(debug_sensor) Serial.println("avg: " + String(avg));
+
+    // map the cc
+    uint16_t cc = map(avg, cc_smin, cc_smax, cc_tmin, cc_tmax);
+
+    // test last cc
+    if(midi_connected == true && cc != last_cc){
+      if(debug_cc) Serial.println("cc: " + String(cc));
+      bool hit = false;
+      // check notes
+      for(int i = 0; i < NB_NOTES; i++){
+        Note note = notes[i].get();
+        if(note.note > 0 && (cc > note.min && cc < note.max)){
+          hit = true;
+          if(last_note != note.note){
+            if(last_last_note != note.note){
+            send_note(note.note, 127, midi_channel);
+            last_last_note = note.note;
+            break;
+            }
+            last_note = note.note;
+          }
+        }
+      }
+      if(hit == false)
+        last_note = 0;
+
+      //Serial.println(dist);
+      //Serial.println(dist);
+      //Serial.println(cc);
+      //delay(20);
+      MIDI.sendControlChange(1, cc, midi_channel);
+      //MIDI.sendNoteOn(note, 127, 1);
+      //delay(50);
+
+      //MIDI.sendNoteOff(note, 127, 1);
+      //delay(20);
+      last_cc = cc;
+    }
+  }
+
 }
 
 #endif
