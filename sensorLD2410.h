@@ -60,194 +60,100 @@ void sensor_loop() {
 
 #if SENSOR == SENSOR_LD2410
 
+size_t readN(uint8_t *buf, size_t len);
 
-// #include <ld2410.h>
-
-// ld2410 radar;
-
-#include "MyLD2410.h"
-
-MyLD2410 sensor(Serial1, true);
-
-uint32_t lastReading = 0;
-bool radarConnected = false;
-
-unsigned long nextPrint = 0, printEvery = 1000;  // print every second
+bool recdData(uint8_t *buf);
 
 uint8_t Cache[23] = {0};    //Cache
-uint16_t last_cc = 0;
-int last_note = 0;
-movingAvg moving_avg(3);
 
-
-void printValue(const byte &val) {
-  Serial.print(' ');
-  Serial.print(val);
+void sensor_setup()
+{
+  Serial1.begin(57600); //Soft serial port
+  //Serial1.begin(256000);
 }
 
-void printData() {
-  Serial.print(sensor.statusString());
-  if (sensor.presenceDetected()) {
-    Serial.print(", distance: ");
-    Serial.print(sensor.detectedDistance());
-    Serial.print("cm");
-  }
-  Serial.println();
-  if (sensor.movingTargetDetected()) {
-    Serial.print(" MOVING    = ");
-    Serial.print(sensor.movingTargetSignal());
-    Serial.print("@");
-    Serial.print(sensor.movingTargetDistance());
-    Serial.print("cm ");
-    if (sensor.inEnhancedMode()) {
-      Serial.print("\n signals->[");
-      sensor.getMovingSignals().forEach(printValue);
-      Serial.print(" ] thresholds:[");
-      sensor.getMovingThresholds().forEach(printValue);
-      Serial.print(" ]");
+void sensor_loop()
+{
+  recdData(Cache);
+}
+
+size_t readN(uint8_t *buf, size_t len)
+{
+  size_t offset = 0, left = len;
+  int16_t Tineout = 1500;
+  uint8_t  *buffer = buf;
+  long curr = millis();
+  while (left) {
+    if (Serial1.available()) {
+      // buffer[offset] = Serial1.read();
+      buffer[offset] = Serial1.read();
+      offset++;
+      left--;
     }
-    Serial.println();
-  }
-  if (sensor.stationaryTargetDetected()) {
-    Serial.print(" STATIONARY= ");
-    Serial.print(sensor.stationaryTargetSignal());
-    Serial.print("@");
-    Serial.print(sensor.stationaryTargetDistance());
-    Serial.print("cm ");
-    if (sensor.inEnhancedMode()) {
-      Serial.print("\n signals->[");
-      sensor.getStationarySignals().forEach(printValue);
-      Serial.print(" ] thresholds:[");
-      sensor.getStationaryThresholds().forEach(printValue);
-      Serial.print(" ]");
+    if (millis() - curr > Tineout) {
+      break;
     }
-    Serial.println();
   }
-
-  if (sensor.inEnhancedMode() && (sensor.getFirmwareMajor() > 1)) { 
-    Serial.print("Light level: ");
-    Serial.println(sensor.getLightLevel());
-    Serial.print("Output level: ");
-    Serial.println((sensor.getOutLevel()) ? "HIGH" : "LOW");
-  }
-
-  Serial.println();
+  return offset;
 }
 
-void sensor_setup() {
-  Serial.println(F("------------------------------------"));
-  Serial.println(F("    mmWave 24Ghz LD2410"));
-  Serial.println(F("------------------------------------"));
-
-  Serial1.begin(256000);
-
-  //moving_avg.begin();e
-
-  // MOdule Report Data Normal Mode
-
-  // NORMAL 
-  //String hex_to_send = "FDFCFBFA0800120000006400000004030201";
-
-  //delay(2000);
-
-  while (!sensor.begin()) {
-    Serial.println("Failed to communicate with the sensor.");
+bool recdData(uint8_t *buf)
+{
+  int16_t Tineout = 50000;
+  long curr = millis();
+  uint8_t ch;
+  bool ret = false;
+  const char *P;
+  while (!ret) {
+    if (millis() - curr > Tineout) {
+      break;
+    }
+    if (readN(&ch, 1) == 1) {
+      if (ch == 0xF4) {
+        buf[0] = ch;
+        if (readN(&ch, 1) == 1) {
+          if (ch == 0xF3) {
+            buf[1] = ch;
+            if (readN(&ch, 1) == 1) {
+              if (ch == 0xF2) {
+                buf[2] = ch;
+                if (readN(&ch, 1) == 1) {
+                  if (ch == 0xF1) {
+                    buf[3] = ch;
+                      if (readN(&buf[4], 19) == 19) {
+//                        printdf(buf, 23); //Print raw data
+                        uint16_t Adistance = buf[10] << 8 | buf[9];
+                        uint16_t Sdistance = buf[13] << 8 | buf[12];
+                        uint16_t Distance = buf[16] << 8 | buf[15];
+                        // switch (buf[8]) {
+                        //   case 0x00 : Serial.println("Detected status: nobody"); break;
+                        //   case 0x01 : Serial.println("Detected status: moving"); break;
+                        //   case 0x02 : Serial.println("Detected status: stationary"); break;
+                        //   case 0x03 : Serial.println("Detected status: moving & stationary object"); break;
+                        // }
+                      //  Serial.print("Energy value of moving object:");
+                      //  Serial.println(buf[11]);
+                      //  Serial.print("Energy value of stationary object:");
+                      //  Serial.println(buf[14]);
+                      //  Serial.print("Distance to the moving object in CM:");
+                      //  Serial.println(Adistance);
+                      //  Serial.print("Distance to the stationary object in CM:");
+                      //  Serial.println(Sdistance);
+                      //   Serial.print("Detection distance CM:");
+                      //   Serial.println(Distance);
+                        send_note_from_dist(Distance);
+                        break;
+                      }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   }
-
-  // REPORT
-  // if(radar.begin(Serial1))
-  // {
-  //   Serial.println(F("OK"));
-  //   Serial.print(F("LD2410 firmware version: "));
-  //   Serial.print(radar.firmware_major_version);
-  //   Serial.print('.');
-  //   Serial.print(radar.firmware_minor_version);
-  //   Serial.print('.');
-  //   Serial.println(radar.firmware_bugfix_version, HEX);
-  //   Serial.println(F("Setup Done."));
-  // }
-  // else
-  // {
-  //   Serial.println(F("not connected"));
-  // }
-  // // Read and print serial data
-  // delay(100);
-  
-  Serial.println("Sensor Ready.");
-
+  return ret;
 }
-
-void sensor_loop() {
-  printData();
-  if ((sensor.check() == MyLD2410::Response::DATA) && (millis() > nextPrint)) {
-    nextPrint = millis() + printEvery;
-    printData();
-  }
-
-  // radar.read();
-  // if(radar.isConnected() && millis() - lastReading > 1000)  //Report every 1000ms
-  // {
-  //   lastReading = millis();
-  //   if(radar.presenceDetected())
-  //   {
-  //     if(radar.stationaryTargetDetected())
-  //     {
-  //       Serial.print(F("Stationary target: "));
-  //       Serial.print(radar.stationaryTargetDistance());
-  //       Serial.print(F("cm energy:"));
-  //       Serial.print(radar.stationaryTargetEnergy());
-  //       Serial.print(' ');
-  //     }
-  //     if(radar.movingTargetDetected())
-  //     {
-  //       Serial.print(F("Moving target: "));
-  //       Serial.print(radar.movingTargetDistance());
-  //       Serial.print(F("cm energy:"));
-  //       Serial.print(radar.movingTargetEnergy());
-  //     }
-  //     Serial.println();
-  //   }
-  //   else
-  //   {
-  //     Serial.println(F("No target"));
-  //   }
-  // }
-  // // Read and print serial data
-  // uint16_t dist = readDistance(Cache);
-  // if(debug_raw) Serial.println("dist: " + String(dist));
-  // //int note = dist;
-  // if(dist > cc_smin && dist < cc_smax){
-  //   uint16_t avg = moving_avg.reading(dist);
-  //   if(debug_sensor) Serial.println("avg: " + String(avg));
-  //   //int note = map(avg, 0, 600, 0, 127);
-  //   uint16_t cc = map(avg, cc_smin, cc_smax, cc_tmin, cc_tmax);
-
-  //   if(midi_connected == true && cc != last_cc){
-  //     if(debug_cc) Serial.println("cc: " + String(cc));
-      
-  //     for(int i = 0; i < NB_NOTES; i++){
-  //       Note note = notes[i].get();
-  //       if(note.note > 0 && (cc > note.min && cc < note.max)){
-  //         if(last_note != note.note){
-  //           send_note(note.note);
-  //           last_note = note.note;
-  //         }
-  //       }
-  //     }
-
-  //     //Serial.println(dist);
-  //     //Serial.println(dist);
-  //     //Serial.println(cc);
-  //     MIDI.sendControlChange(1, cc, 1);
-  //     //MIDI.sendNoteOn(note, 127, 1);
-  //     //delay(50);
-
-  //     //MIDI.sendNoteOff(note, 127, 1);
-  //     //delay(20);
-  //     last_cc = cc;
-  //   }
-  // }
-}
-
 
 #endif
