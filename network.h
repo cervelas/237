@@ -9,8 +9,8 @@ char ap_pass[] = "12345678";        // your network password (use for WPA, or us
 
 arduino::IPAddress ap_ip = IPAddress(10,10,1,UID);
 
-bool dhcp = true;
-arduino::IPAddress client_ip = IPAddress(192,168,1,205); // not used, dhcp
+bool dhcp = false;
+arduino::IPAddress client_ip = IPAddress(192,168,2,UID); // not used, dhcp
 
 int net_status = WL_IDLE_STATUS;
 
