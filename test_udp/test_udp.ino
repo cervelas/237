@@ -2,8 +2,8 @@
 #include <WiFiUdp.h>
 
 // WiFi credentials
-const char ssid[] = "Je suis trop un bobet";
-const char pass[] = "Wifi1012";
+const char ssid[] = "secret";
+const char pass[] = "secret";
 
 // UDP settings
 const char* message = "Hello from Arduino R4!";
@@ -15,57 +15,60 @@ WiFiUDP Udp;
 IPAddress remoteIP;
 
 void setup() {
-  Serial.begin(9600);
-  while (!Serial);  // Wait for Serial Monitor
+    Serial.begin(9600);
+    while (!Serial)
+        ;  // Wait for Serial Monitor
 
-  if (WiFi.status() == WL_NO_MODULE) {
-    Serial.println("WiFi module not found.");
-    while (true);
-  }
+    if (WiFi.status() == WL_NO_MODULE) {
+        Serial.println("WiFi module not found.");
+        while (true)
+            ;
+    }
 
-  connectToWiFi();
-  printWifiStatus();
+    connectToWiFi();
+    printWifiStatus();
 
-  if (!remoteIP.fromString(remoteIpStr)) {
-    Serial.println("Invalid remote IP address format.");
-    while (true);
-  }
+    if (!remoteIP.fromString(remoteIpStr)) {
+        Serial.println("Invalid remote IP address format.");
+        while (true)
+            ;
+    }
 
-  Udp.begin(localPort);
-  Serial.println("UDP ready. Sending packets...");
+    Udp.begin(localPort);
+    Serial.println("UDP ready. Sending packets...");
 }
 
 void loop() {
-  Udp.beginPacket(remoteIP, remotePort);
-  Udp.write(message);
-  Udp.endPacket();
+    Udp.beginPacket(remoteIP, remotePort);
+    Udp.write(message);
+    Udp.endPacket();
 
-  Serial.println("UDP packet sent.");
+    Serial.println("UDP packet sent.");
 
-  delay(1000);  // Adjust delay as needed
+    delay(1000);  // Adjust delay as needed
 }
 
 void connectToWiFi() {
-  int status = WL_IDLE_STATUS;
+    int status = WL_IDLE_STATUS;
 
-  while (status != WL_CONNECTED) {
-    Serial.print("Connecting to SSID: ");
-    Serial.println(ssid);
-    status = WiFi.begin(ssid, pass);
-    delay(5000);
-  }
+    while (status != WL_CONNECTED) {
+        Serial.print("Connecting to SSID: ");
+        Serial.println(ssid);
+        status = WiFi.begin(ssid, pass);
+        delay(5000);
+    }
 
-  Serial.println("Connected to WiFi.");
+    Serial.println("Connected to WiFi.");
 }
 
 void printWifiStatus() {
-  Serial.print("SSID: ");
-  Serial.println(WiFi.SSID());
+    Serial.print("SSID: ");
+    Serial.println(WiFi.SSID());
 
-  Serial.print("IP Address: ");
-  Serial.println(WiFi.localIP());
+    Serial.print("IP Address: ");
+    Serial.println(WiFi.localIP());
 
-  Serial.print("Signal Strength (RSSI): ");
-  Serial.print(WiFi.RSSI());
-  Serial.println(" dBm");
+    Serial.print("Signal Strength (RSSI): ");
+    Serial.print(WiFi.RSSI());
+    Serial.println(" dBm");
 }
