@@ -6,15 +6,16 @@
 
 void render_midi_ctrl(WiFiClient client){
   String tpl = F(
+    "<div>DEBUG <a href='/debug_cc'>CC</a>&nbsp;<a href='/debug_sensor'>sensor</a>&nbsp;<a href='/debug_raw'>raw</a>&nbsp;<a href='/debug_midi'>midi</a>&nbsp;</div>"
     "<form method='post' action='/midi'><fieldset>"
-    "<div class='float-right'><input type='submit' value='Update'><a href='/connect'>connect</a><a href='/end'>end</a></div><h3>MIDI Control</h3>"
-    "<h5>Local IP address: {{localip}}</h5>"
-    "<h5>MIDI Port: {{midiport}}</h5>"
-    "<h5>MIDI Name: {{midiname}}</h5>"
+    "<div class='float-right'><input type='submit' value='Update'></div><h3>MIDI Control</h3>"
+    "<div>MIDI <b>{{connect_status}}</b>&nbsp;<a href='/connect'>connect</a>&nbsp;<a href='/end'>end</a></div>"
+    "<div>SEND <b>{{midi_status}}</b><a href='/enable'>Enable</a>&nbsp;<a href='/disable'>Disable</a></div>"
+    "<h5>RTP MIDI: {{midiname}} {{localip}}:{{midiport}}</h5>"
     "<label for='cc_smin'>Remote IP Address {{remote_prefix}}</label>"
     "<input type='number' id='remote_id' name='remote_id' value='{{remote_id}}' min=0 max=255>"
-    "<h4>MIDI Remote Connected: {{status}}</h4>"
     "</fieldset></form><hr>"
+    ""
   );
 
   tpl.replace("{{localip}}", WiFi.localIP().toString());
@@ -24,19 +25,33 @@ void render_midi_ctrl(WiFiClient client){
   tpl.replace("{{remote_id}}", String(midi_remote_id.get()));
   tpl.replace("{{midiport}}", String(AppleMIDI.getPort()));
   tpl.replace("{{midiname}}", String(AppleMIDI.getName()));
-  tpl.replace("{{status}}", String(midi_connected));
+  if(midi_connected)
+    tpl.replace("{{connect_status}}", "CONNECTED");
+  else
+    tpl.replace("{{connect_status}}", "DISCONNECTED");
+
+  if(midi_enable)
+    tpl.replace("{{midi_status}}", "ENABLE");
+  else
+    tpl.replace("{{midi_status}}", "DISABLED");
 
   client.println(tpl);
 }
 
 void midi_get_handler(String url){
-  if(url.endsWith("connect")){
-    Serial.println("midi connect");
-    midi_start();
-  }else if(url.endsWith("end")){
-    Serial.println("midi end");
-    midi_end();
-  }
+  if(url.endsWith("connect")) midi_start();
+  else if(url.endsWith("end")) midi_end();
+  else if(url.endsWith("enable")) midi_enable = true;
+  else if(url.endsWith("disable")) midi_enable = false;
+
+}
+
+void debug_get_handler(String url){
+  if(url.endsWith("debug_cc")) debug_cc = true;
+  else if(url.endsWith("debug_sensor")) debug_sensor = true;
+  else if(url.endsWith("debug_raw")) debug_raw = true;
+  else if(url.endsWith("debug_midi")) debug_midi = true;
+
 }
 
 void midi_post_handler(String url, String name, String value){
@@ -91,12 +106,12 @@ void render_note_ctrl(int id, uint16_t trig_min, uint16_t trig_max, uint16_t not
     "<form method='post' action='/note{{uid}}'><fieldset>"
     "<div class='float-right'><input type='submit' value='update'></div><h3>MIDI {{name}}</h3>"
     "<input type='hidden' id='uid' name='uid' value='{{uid}}>"
-    "<label for='note'>Note triggered</label>"
+    "<label for='note'>Note</label>"
     "<input type='number' id='note' name='note' value='{{note}}' min=0 max=127>"
     "<label for='trig_min'>MIN CC</label>"
     "<input type='number' id='trig_min' name='trig_min' value='{{trig_min}}' min=0 max=127>"
     "<label for='trig_max'>MAX CC</label>"
-    "<input type='number' id='cc_tmin' name='trig_max' value='{{trig_max}}' min=0 max=127>"
+    "<input type='number' id='trig_max' name='trig_max' value='{{trig_max}}' min=0 max=127>"
     "</fieldset></form><hr>"
   );
 
@@ -105,6 +120,41 @@ void render_note_ctrl(int id, uint16_t trig_min, uint16_t trig_max, uint16_t not
   tpl.replace("{{name}}", String(id));
   tpl.replace("{{trig_min}}", String(trig_min));
   tpl.replace("{{trig_max}}", String(trig_max));
+  tpl.replace("{{note}}", String(note));
+
+  client.println(tpl);
+}
+
+void render_near_note_ctrl(uint16_t trig, uint16_t note, WiFiClient client){
+  String tpl = F(
+    "<form method='post' action='/near_note'><fieldset>"
+    "<div class='float-right'><input type='submit' value='update'></div><h3>MIDI NEAR NOTE</h3>"
+    "<label for='note'>Note</label>"
+    "<input type='number' id='note' name='note' value='{{note}}' min=0 max=127>"
+    "<label for='trig'>MAX DIST</label>"
+    "<input type='number' id='trig' name='trig' value='{{trig}}'>"
+    "</fieldset></form><hr>"
+  );
+
+  tpl.replace("{{trig}}", String(trig));
+  tpl.replace("{{note}}", String(note));
+
+  client.println(tpl);
+}
+
+
+void render_far_note_ctrl(uint16_t trig, uint16_t note, WiFiClient client){
+  String tpl = F(
+    "<form method='post' action='/far_note'><fieldset>"
+    "<div class='float-right'><input type='submit' value='update'></div><h3>MIDI FAR NOTE</h3>"
+    "<label for='note'>Note</label>"
+    "<input type='number' id='note' name='note' value='{{note}}' min=0 max=127>"
+    "<label for='trig'>MIN DIST</label>"
+    "<input type='number' id='trig' name='trig' value='{{trig}}'>"
+    "</fieldset></form><hr>"
+  );
+
+  tpl.replace("{{trig}}", String(trig));
   tpl.replace("{{note}}", String(note));
 
   client.println(tpl);
@@ -129,6 +179,22 @@ void cc_note_handler(String url, String name, String value){
     if(name.compareTo("note") == 0) note.note = atoi(value.c_str());
 
     notes[id] = note;
+  }else if(url.startsWith("/near_note")){
+    Note note = note_near.get();
+
+    if(name.compareTo("trig") == 0) note.max = atoi(value.c_str());
+    if(name.compareTo("note") == 0) note.note = atoi(value.c_str());
+
+    note_near = note;
+  
+  }else if(url.startsWith("/far_note")){
+    Note note = note_far.get();
+
+    if(name.compareTo("trig") == 0) note.min = atoi(value.c_str());
+    if(name.compareTo("note") == 0) note.note = atoi(value.c_str());
+
+    note_far = note;
+  
   }
 }
 
@@ -137,6 +203,9 @@ void render_ui_body(WiFiClient client){
 
   render_cc_ctrl(cc_smin, cc_smax, cc_tmin, cc_tmax, client);
   
+  render_near_note_ctrl(note_near.get().max, note_near.get().note, client);
+  render_far_note_ctrl(note_far.get().min, note_far.get().note, client);
+
   for(int i = 0; i < NB_NOTES; i++){
     Note note = notes[i].get();
     render_note_ctrl(i, note.min, note.max, note.note, client);
@@ -191,12 +260,13 @@ void post_req_cb(ArduinoHttpServer::HttpResource resource, String body){
 }
                                               
 // Define number of get data callbacks, do not forget to sync with array below !
-#define num_get_handlers 1
+#define num_get_handlers 2
 
 typedef void (*post_get_handler)(String);
 
 post_get_handler get_handlers[num_get_handlers] = { 
-                                                  &midi_get_handler 
+                                                  &midi_get_handler,
+                                                  &debug_get_handler
                                               };  
 
 void get_req_cb(ArduinoHttpServer::HttpResource resource){

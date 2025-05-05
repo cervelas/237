@@ -158,8 +158,8 @@ void send_note(int note, int vel = 127, int channel = 1, int duration = 5){
 void send_note_from_dist(uint16_t dist){
   if(debug_raw) Serial.println("dist: " + String(dist));
   
-  Note near = note_near.get()
-  Note near = note_far.get()
+  Note near = note_near.get();
+  Note far = note_far.get();
 
   if(dist <= near.max){
     if(last_note != near.note){

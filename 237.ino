@@ -17,10 +17,9 @@ uint8_t _UID = 2;
 
 bool sensor_enabled = true;
 
-// WiFi Stuff
-
-char client_ssid[] = "Truc portable"; 
-char client_pass[] = "1234567890";  
+// WiFi Stuf
+char client_ssid[] = "MynameisWifi";
+char client_pass[] = "Machine2023";
 bool wifi_connected = false;
 
 // Storage for UI and midi
@@ -65,8 +64,12 @@ EEPROMStorage<Note> notes[NB_NOTES] = {
 // Midi global var
 
 EEPROMStorage<bool> midi_connected(note7.nextAddress(), false);
-EEPROMStorage<uint8_t> midi_remote_id(midi_connected.nextAddress(), 100);
-EEPROMStorage<uint8_t> midi_channel(midi_channel.nextAddress(), _UID);
+EEPROMStorage<uint8_t> midi_remote_id(midi_connected.nextAddress(), 33);
+EEPROMStorage<uint8_t> midi_channel(midi_remote_id.nextAddress(), _UID);
+EEPROMStorage<bool> midi_enable(midi_channel.nextAddress(), true);
+
+EEPROMStorage<Note> note_far(midi_enable.nextAddress(), {0,0,0});
+EEPROMStorage<Note> note_near(note_far.nextAddress(), {0,0,0});
 
 
 String status = "";
@@ -94,6 +97,13 @@ void logln(auto text){
 #include "ui.h"
 
 void setup() {
+  
+debug_cc = false;
+debug_sensor = false;
+debug_raw = false;
+debug_midi = false;
+
+
   Serial.begin(115200);
   log("Hello. i'm ");
   logln(UID);
@@ -110,6 +120,6 @@ void loop() {
   leds_show();
   wifi_client_loop();
   midi_loop();
-  if(midi_connected.get() == true) sensor_loop();
+  if(midi_connected.get() == true && midi_enable.get() == true) sensor_loop();
   ui_loop();
 }
