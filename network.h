@@ -7,13 +7,12 @@ char ap_ssid[] = "ARDUINO";        // your network SSID (name)
 char ap_pass[] = "12345678";        // your network password (use for WPA, or use as key for WEP)
 
 
-arduino::IPAddress ap_ip = IPAddress(10,10,1,UID);
+arduino::IPAddress ap_ip = IPAddress(10,10,1,_UID);
 
-bool dhcp = false;
-arduino::IPAddress client_ip = IPAddress(192,168,2,UID); // not used, dhcp
+bool dhcp = true;
+arduino::IPAddress client_ip = IPAddress(192,168,2,_UID); // not used, dhcp
 
 int net_status = WL_IDLE_STATUS;
-
 
 void wifi_setup_client() {
 
