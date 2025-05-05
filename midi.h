@@ -7,9 +7,10 @@
 //#define ONE_PARTICIPANT
 //#define NO_SESSION_NAME
 
-#define APPLEMIDI_INITIATOR
+//#define APPLEMIDI_INITIATOR
 
 #include <WiFiS3.h>
+#define USE_EXT_CALLBACKS
 #include <AppleMIDI_Debug.h>
 #include <AppleMIDI.h>
 #include "ledmatrix.h"
@@ -22,7 +23,10 @@ movingAvg moving_avg(3);
 
 String name = "A" + String(_UID);
 
-APPLEMIDI_CREATE_INSTANCE(WiFiUDP, MIDI, name.c_str(), DEFAULT_CONTROL_PORT);
+APPLEMIDI_CREATE_INSTANCE(WiFiUDP, MIDI, "237", 5004);
+
+void OnAppleMidiException(const APPLEMIDI_NAMESPACE::ssrc_t&, const APPLEMIDI_NAMESPACE::Exception&, const int32_t);
+
 
 unsigned long t1 = millis();
 
@@ -32,18 +36,19 @@ unsigned long last_sysex = 0;
 void midi_end(){
   Serial.println("End session.");
   AppleMIDI.sendEndSession();
-
 }
 
 void midi_start(){
   connecting = true;
   IPAddress remote = WiFi.localIP();
   remote[3] = midi_remote_id.get();
+  
   Serial.print("trying to connect MIDI Device ");
   Serial.println(remote);
-  bool invited = AppleMIDI.sendInvite(remote, DEFAULT_CONTROL_PORT);
-  Serial.print("invite sent");
-  Serial.println(invited);
+  MIDI.begin();
+  //bool invited = AppleMIDI.sendInvite(remote, DEFAULT_CONTROL_PORT);
+  //Serial.print("invite sent");
+  //Serial.println(invited);
 }
 
 void midi_setup()
@@ -51,10 +56,17 @@ void midi_setup()
 
   moving_avg.begin();
 
+  AppleMIDI.setHandleException(OnAppleMidiException);
+
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, LOW);
   Serial.print("MIdi Setup... ");
   midi_connected = false;
+
+  IPAddress remote = WiFi.localIP();
+  remote[3] = midi_remote_id.get();
+  //AppleMIDI.directory.push_back(remote);
+  //AppleMIDI.whoCanConnectToMe = APPLEMIDI_NAMESPACE::Anyone;
 
   //Udp.begin(5004)
 
@@ -158,23 +170,23 @@ void send_note(int note, int vel = 127, int channel = 1, int duration = 5){
 void send_note_from_dist(uint16_t dist){
   if(debug_raw) Serial.println("dist: " + String(dist));
   
-  Note near = note_near.get();
-  Note far = note_far.get();
+  // Note near = note_near.get();
+  // Note far = note_far.get();
 
-  if(dist <= near.max){
-    if(last_note != near.note){
-      send_note(near.note, 127, midi_channel);
-      last_note = near.note;
-    }
-  }else
+  // if(dist <= near.max){
+  //   if(last_note != near.note){
+  //     send_note(near.note, 127, midi_channel);
+  //     last_note = near.note;
+  //   }
+  // }else
 
-  if(dist >= far.min){
-    if(last_note != far.note){
-      send_note(far.note, 127, midi_channel);
-      last_note = far.note;
-    }
-  }else
-
+  // if(dist >= far.min){
+  //   if(last_note != far.note){
+  //     send_note(far.note, 127, midi_channel);
+  //     last_note = far.note;
+  //   }
+  // }else
+  
   if(dist > cc_smin && dist < cc_smax){
     uint16_t avg = moving_avg.reading(dist);
     if(debug_sensor) Serial.println("avg: " + String(avg));
@@ -192,32 +204,69 @@ void send_note_from_dist(uint16_t dist){
         if(note.note > 0 && (cc > note.min && cc < note.max)){
           hit = true;
           if(last_note != note.note){
-            if(last_last_note != note.note){
             send_note(note.note, 127, midi_channel);
-            last_last_note = note.note;
-            break;
-            }
             last_note = note.note;
+            break;
           }
         }
       }
       if(hit == false)
         last_note = 0;
 
-      //Serial.println(dist);
-      //Serial.println(dist);
-      //Serial.println(cc);
-      //delay(20);
       MIDI.sendControlChange(1, cc, midi_channel);
-      //MIDI.sendNoteOn(note, 127, 1);
-      //delay(50);
-
-      //MIDI.sendNoteOff(note, 127, 1);
-      //delay(20);
       last_cc = cc;
     }
   }
 
+}
+
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void OnAppleMidiException(const APPLEMIDI_NAMESPACE::ssrc_t& ssrc, const APPLEMIDI_NAMESPACE::Exception& e, const int32_t value ) {
+  switch (e)
+  {
+    case APPLEMIDI_NAMESPACE::Exception::BufferFullException:
+      Serial.println(F("*** BufferFullException"));
+      break;
+    case APPLEMIDI_NAMESPACE::Exception::ParseException:
+      Serial.println(F("*** ParseException"));
+      break;
+    case APPLEMIDI_NAMESPACE::Exception::TooManyParticipantsException:
+      Serial.println(F("*** TooManyParticipantsException"));
+      break;
+    case APPLEMIDI_NAMESPACE::Exception::UnexpectedInviteException:
+      Serial.println(F("*** UnexpectedInviteException"));
+      break;
+    case APPLEMIDI_NAMESPACE::Exception::ParticipantNotFoundException:
+      Serial.println(F("*** ParticipantNotFoundException"));
+      break;
+    case APPLEMIDI_NAMESPACE::Exception::ComputerNotInDirectory:
+      Serial.println(F("*** ComputerNotInDirectory"));
+      break;
+    case APPLEMIDI_NAMESPACE::Exception::NotAcceptingAnyone:
+      Serial.println(F("*** NotAcceptingAnyone"));
+      break;
+    case APPLEMIDI_NAMESPACE::Exception::ListenerTimeOutException:
+      Serial.println(F("*** ListenerTimeOutException"));
+      break;
+    case APPLEMIDI_NAMESPACE::Exception::MaxAttemptsException:
+      Serial.println(F("*** MaxAttemptsException"));
+      break;
+    case APPLEMIDI_NAMESPACE::Exception::NoResponseFromConnectionRequestException:
+      Serial.println(F("***:yyy did't respond to the connection request. Check the address and port, and any firewall or router settings. (time)"));
+      break;
+    case APPLEMIDI_NAMESPACE::Exception::SendPacketsDropped:
+      Serial.println(F("*** SendPacketsDropped"));
+      break;
+    case APPLEMIDI_NAMESPACE::Exception::ReceivedPacketsDropped:
+      Serial.println(F("*** ReceivedPacketsDropped"));
+      break;
+    case APPLEMIDI_NAMESPACE::Exception::UdpBeginPacketFailed:
+      Serial.println(F("*** UdpBeginPacketFailed"));
+      break;
+  }
 }
 
 #endif
