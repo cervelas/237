@@ -208,17 +208,6 @@ void sensor_loop() {
   if(debug_raw) Serial.println("dist: " + String(dist));
 
   send_note_from_dist(dist);
-  //return;
-  
-  // if(dist <= note_near.get().max){
-  //   send_note(note_near.get().note, 127, midi_channel);
-  //   return;
-  // }
-
-  // if(dist >= note_far.get().min){
-  //   send_note(note_far.get().note, 127, midi_channel);
-  //   return;
-  // }
 
   // if(dist > cc_smin && dist < cc_smax){
   //   uint16_t avg = moving_avg.reading(dist);
@@ -237,12 +226,9 @@ void sensor_loop() {
   //       if(note.note > 0 && (cc > note.min && cc < note.max)){
   //         hit = true;
   //         if(last_note != note.note){
-  //           if(last_last_note != note.note){
   //           send_note(note.note, 127, midi_channel);
-  //           last_last_note = note.note;
-  //           return;
-  //           }
   //           last_note = note.note;
+  //           break;
   //         }
   //       }
   //     }
