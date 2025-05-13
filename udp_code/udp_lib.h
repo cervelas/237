@@ -43,13 +43,9 @@ void write(char* message) {
     if (Udp.beginPacket(remoteIP, REMOTE_PORT)) {
         Udp.write(message);
         Udp.endPacket();
-#ifdef DEBUG
         Serial.println("Packet sent.");
-#endif
     } else {
-#ifdef DEBUG
         Serial.println("Failed to begin UDP packet!");
-#endif
     }
 }
 
@@ -90,10 +86,10 @@ void print_wifi_status() {
     Serial.print(WiFi.RSSI());
     Serial.println(" dBm");
 
-#ifdef WRITE
-    Serial.print("Sending to: ");
-    Serial.println(REMOTE_IP);
-#endif
+    // #ifdef WRITE
+    //     Serial.print("Sending to: ");
+    //     Serial.println(REMOTE_IP);
+    // #endif
 }
 }  // namespace UdpLib
 
