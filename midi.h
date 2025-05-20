@@ -27,6 +27,7 @@ unsigned long t1 = millis();
 
 bool connecting = false;
 unsigned long last_sysex = 0;
+int idle_counter = 0;
 
 void midi_end() {
   Serial.println("End session.");
@@ -89,20 +90,20 @@ void send_note_from_dist(uint16_t dist) {
       // check notes
       for (int i = 0; i < NB_NOTES; i++) {
         Note note = notes[i].get();
-        if (note.note > 0 && (dist > note.min && dist < note.max)) {
+        if (note.note > 0 && (dist >= note.min && dist <= note.max)) {
           hit = true;
           if (last_note != note.note) {
-            if (last_last_note != note.note) {
-              send_note(note.note, 127, midi_channel);
-              last_last_note = note.note;
-              break;
-            }
+            // if (last_last_note != note.note) {
+            send_note(note.note, 127, midi_channel);
+            // last_last_note = note.note;
             last_note = note.note;
+            break;
+            // }
           }
         }
       }
-      if (hit == false)
-        last_note = 0;
+      // if (hit == false)
+      //   last_note = 0;
 
       send_cc(1, cc, midi_channel);
       last_cc = cc;
@@ -117,16 +118,22 @@ void send_note_from_dist(uint16_t dist) {
     // check for near note
     if (dist <= near.max && near.note != 0) {
       if (last_note != near.note) {
-        send_note(near.note, 127, midi_channel);
-        last_note = near.note;
+        if (idle_counter++ > 3) {
+          send_note(near.note, 127, midi_channel);
+          last_note = near.note;
+          idle_counter = 0;
+        }
       }
     }
 
     // check for far note
     if (dist >= far.min && far.note != 0) {
       if (last_note != far.note) {
-        send_note(far.note, 127, midi_channel);
-        last_note = far.note;
+        if (idle_counter++ > 3) {
+          send_note(far.note, 127, midi_channel);
+          last_note = far.note;
+          idle_counter = 0;
+        }
       }
     }
   }
