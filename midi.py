@@ -63,7 +63,7 @@ if __name__ == "__main__":
             data, address = result
             type, channel, cc_or_note, value_velo = struct.unpack("BBBB", data)
 
-            print(f"Recieved from {address}: {" ".join("{:02x}".format(x) for x in data)}")
+            #print(f"Received from {address}: {" ".join("{:02x}".format(x) for x in data)}")
             print(f"{type}, {channel}, {cc_or_note}, {value_velo}")
 
             if type == 1:
