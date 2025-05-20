@@ -25,14 +25,14 @@ bool udp_setup() {
   return true;
 }
 
-void udp_write(char *message) {
+void udp_write(byte *message, size_t size) {
   if (debug_midi) {
     for (int i = 0; i < 4; i++)
       Serial.print((uint8_t)message[i] + " ");
     Serial.println();
   }
   if (Udp.beginPacket(remoteIP, REMOTE_PORT)) {
-    Udp.write(message);
+    Udp.write(message, size);
     Udp.endPacket();
   } else {
     Serial.println("Failed to begin UDP packet!");

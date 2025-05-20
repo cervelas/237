@@ -146,12 +146,12 @@ void send_note(int note, int vel = 127, int channel = 1, int duration = 5) {
   if (debug_midi)
     Serial.println("Send " + String(note));
 
-  char message[4];
+  byte message[4];
   message[0] = 1;
   message[1] = channel;
   message[2] = note;
   message[3] = vel;
-  udp_write(message);
+  udp_write(message, sizeof(message) * 4);
   // MIDI.sendNoteOn(note, vel, channel);
   // delay(duration);
   // MIDI.sendNoteOff(note, vel, channel);
@@ -178,8 +178,8 @@ void send_note_from_dist(uint16_t dist) {
     }
   } else
 
-    if (dist > cc_smin && dist < cc_smax) {
-      uint16_t avg = moving_avg.reading(dist);
+      if (dist > cc_smin && dist < cc_smax) {
+    uint16_t avg = moving_avg.reading(dist);
     if (debug_sensor)
       Serial.println("avg: " + String(avg));
 
