@@ -1,25 +1,20 @@
 #ifndef CONFIG_UDP
 #define CONFIG_UDP
 
-// comment for reading, uncomment for writing
-#define WRITE
+#define WIFI_SSID "ssid"
+#define WIFI_PASS "pass"
 
-#define DEBUG
+// Arduino Unique ID, must correspond to artwork number
+// used by :
+//    midi for default channel
+//    network for ipaddr
+#define _UID 5
 
-#define WIFI_SSID "my_ssid"
-#define WIFI_PASS "my_pass"
+#define SENSOR_APDS9960 1
+#define SENSOR_HMMD 2
+#define SENSOR_LD2410 4
+#define SENSOR_HCSR04 5
 
-#ifdef WRITE
-
-#define REMOTE_IP "remote_ip"
-#define REMOTE_PORT 5002
-#define LOCAL_PORT 5001
-
-#else
-
-#define REMOTE_PORT 5001
-#define LOCAL_PORT 5002
-
-#endif
+#define SENSOR SENSOR_HCSR04
 
 #endif

@@ -2,24 +2,11 @@
 #include <movingAvg.h>
 #include "config.h"
 
-#define SENSOR_APDS9960 1
-#define SENSOR_HMMD 2
-#define SENSOR_LD2410 4
-#define SENSOR_HCSR04 5
-
-#define SENSOR SENSOR_HCSR04
-
-// Arduino Unique ID, must correspond to artwork number
-// used by :
-//    midi for default channel
-//    network for ipaddr
-//    AppleMidi for device name
-
 bool sensor_enabled = true;
 
 // WiFi Stuf
-char client_ssid[] = "MynameisWifi";
-char client_pass[] = "Machine2023";
+char client_ssid[] = WIFI_SSID;
+char client_pass[] = WIFI_PASS;
 bool wifi_connected = false;
 
 // Storage for UI and midi
