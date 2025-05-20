@@ -1,5 +1,3 @@
-
-
 #ifndef __MIDI_H
 #define __MIDI_H
 
@@ -44,107 +42,21 @@ void midi_start() {
   Serial.println(invited);
 }
 
-void midi_setup() {
-
-  moving_avg.begin();
-
-  pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, LOW);
-  Serial.print("MIdi Setup... ");
-  midi_connected = false;
-
-  // Udp.begin(5004)
-
-  // Serial.println("Select and then press the Connect button");
-  // Serial.println("Then open a MIDI listener and monitor incoming notes");
-
-  // Stay informed on connection status
-  AppleMIDI
-      .setHandleConnected(
-          [](const APPLEMIDI_NAMESPACE::ssrc_t &ssrc, const char *name) {
-            midi_connected = true;
-            connecting = false;
-            Serial.println("Connected to session");
-            Serial.println(ssrc);
-            Serial.println(name);
-
-            digitalWrite(LED_BUILTIN, HIGH);
-            set_matrix_text("");
-          })
-      .setHandleDisconnected([](const APPLEMIDI_NAMESPACE::ssrc_t &ssrc) {
-        midi_connected = false;
-        connecting = false;
-        Serial.println("Disconnected");
-        Serial.println(ssrc);
-        digitalWrite(LED_BUILTIN, LOW);
-        set_matrix_text(WiFi.localIP().toString());
-      });
-  /*
-  MIDI.setHandleNoteOn([](byte channel, byte note, byte velocity) {
-    Serial.print("NoteOn");
-    Serial.print(note);
-  });
-  MIDI.setHandleNoteOff([](byte channel, byte note, byte velocity) {
-    Serial.print("NoteOff");
-    Serial.print(note);
-  });*/
-  MIDI.begin();
-
-  Serial.println("Done.");
-
-  // Serial.println("OK, now make sure you an rtpMIDI session that is Enabled");
-  Serial.print("Add device named Arduino with Host ");
-  Serial.print(WiFi.localIP());
-  Serial.print(" Port ");
-  Serial.print(AppleMIDI.getPort());
-  Serial.print(" Name ");
-  Serial.println(AppleMIDI.getName());
-
-  // midi_start();
-}
-
-byte sysex[1] = {0};
-
-void midi_loop() {
-  if (wifi_connected) {
-    MIDI.read();
-    if (midi_connected == false && connecting == false) {
-      delay(100);
-      if (midi_connected == false && connecting == false) {
-        midi_end();
-        midi_start();
-        delay(100);
-      }
-    }
-    if (millis() - last_sysex > 1000L) {
-      // MIDI.sendSysEx(1, sysex);
-      last_sysex = millis();
-    }
-  }
-
-  // Listen to incoming notes
-  // MIDI.read();
-  // delay(50);
-
-  // send a note every second
-  // (dont cáll delay(1000) as it will stall the pipeline)
-  // if ((isConnected > 0) && (millis() - t1) > 1000)
-  // {
-  //   t1 = millis();
-
-  //   byte note = random(1, 127);
-  //   byte velocity = 127;
-  //   byte channel = 1;
-
-  //   MIDI.sendNoteOn(note, velocity, channel);
-  //   delay(50);
-  //   MIDI.sendNoteOff(note, velocity, channel);
-  // }
-}
-
-void send_note(int note, int vel = 127, int channel = 1, int duration = 5) {
+void send_cc(int cc, int value, int channel = 1) {
   if (debug_midi)
-    Serial.println("Send " + String(note));
+    Serial.println("Send cc: " + String(cc) + " value: " + String(value));
+
+  byte message[4];
+  message[0] = 2;
+  message[1] = channel;
+  message[2] = cc;
+  message[3] = value;
+  udp_write(message, sizeof(message) * 4);
+}
+
+void send_note(int note, int vel = 127, int channel = 1) {
+  if (debug_midi)
+    Serial.println("Send note: " + String(note));
 
   byte message[4];
   message[0] = 1;
@@ -152,9 +64,9 @@ void send_note(int note, int vel = 127, int channel = 1, int duration = 5) {
   message[2] = note;
   message[3] = vel;
   udp_write(message, sizeof(message) * 4);
-  // MIDI.sendNoteOn(note, vel, channel);
-  // delay(duration);
-  // MIDI.sendNoteOff(note, vel, channel);
+  digitalWrite(LED_BUILTIN, HIGH);
+  delay(5);
+  digitalWrite(LED_BUILTIN, LOW);
 }
 
 void send_note_from_dist(uint16_t dist) {
@@ -165,24 +77,16 @@ void send_note_from_dist(uint16_t dist) {
   Note far = note_far.get();
 
   if (dist <= near.max) {
-    if (last_note != near.note) {
+    if (last_note != near.note && near.note != 0) {
       send_note(near.note, 127, midi_channel);
       last_note = near.note;
     }
-  } else
-
-      if (dist >= far.min) {
-    if (last_note != far.note) {
+  } else if (dist >= far.min) {
+    if (last_note != far.note && far.note != 0) {
       send_note(far.note, 127, midi_channel);
       last_note = far.note;
     }
-  } else
-
-      if (dist > cc_smin && dist < cc_smax) {
-    uint16_t avg = moving_avg.reading(dist);
-    if (debug_sensor)
-      Serial.println("avg: " + String(avg));
-
+  } else if (dist > cc_smin && dist < cc_smax) {
     // map the cc
     uint16_t cc = map(dist, cc_smin, cc_smax, cc_tmin, cc_tmax);
 
@@ -209,16 +113,7 @@ void send_note_from_dist(uint16_t dist) {
       if (hit == false)
         last_note = 0;
 
-      // Serial.println(dist);
-      // Serial.println(dist);
-      // Serial.println(cc);
-      // delay(20);
-      // MIDI.sendControlChange(1, cc, midi_channel);
-      // MIDI.sendNoteOn(note, 127, 1);
-      // delay(50);
-
-      // MIDI.sendNoteOff(note, 127, 1);
-      // delay(20);
+      send_cc(1, cc, midi_channel);
       last_cc = cc;
     }
   }

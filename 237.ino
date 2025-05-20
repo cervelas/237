@@ -1,5 +1,6 @@
 #include <EEPROM-Storage.h>
 #include <movingAvg.h>
+#include "config.h"
 
 #define SENSOR_APDS9960 1
 #define SENSOR_HMMD 2
@@ -13,8 +14,6 @@
 //    midi for default channel
 //    network for ipaddr
 //    AppleMidi for device name
-
-uint8_t _UID = 2;
 
 bool sensor_enabled = true;
 
@@ -100,7 +99,6 @@ void logln(auto text) {
 #include "ui.h"
 
 void setup() {
-
   debug_cc = false;
   debug_sensor = false;
   debug_raw = false;
@@ -115,8 +113,6 @@ void setup() {
   ui_setup();
   printWiFiStatus();
   leds_setup();
-  // midi_setup();
-  midi_connected = true;
   sensor_setup();
 }
 
@@ -124,7 +120,6 @@ void setup() {
 void loop() {
   leds_show();
   wifi_client_loop();
-  midi_loop();
   if (midi_connected.get() == true && midi_enable.get() == true) sensor_loop();
   ui_loop();
 }

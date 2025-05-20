@@ -4,7 +4,7 @@
 #include <WiFiS3.h>
 #include <WiFiUdp.h>
 
-#include "config.h"
+#include "ledmatrix.h"
 
 void connect_wifi();
 bool begin_udp();
@@ -13,16 +13,10 @@ bool read(char *buffer, uint8_t size);
 void print_wifi_status();
 
 WiFiUDP Udp;
-IPAddress remoteIP;
 
-bool udp_setup() {
-  if (!remoteIP.fromString(REMOTE_IP)) {
-    Serial.println("Invalid remote IP address format.");
-    return false;
-  }
-
-  Udp.begin(LOCAL_PORT);
-  return true;
+void udp_setup() {
+  if (Udp.begin(5000 + UID))
+    midi_connected = true;
 }
 
 void udp_write(byte *message, size_t size) {
@@ -31,11 +25,11 @@ void udp_write(byte *message, size_t size) {
       Serial.print((uint8_t)message[i] + " ");
     Serial.println();
   }
-  if (Udp.beginPacket(remoteIP, REMOTE_PORT)) {
+  if (Udp.beginPacket(client_ip, 5000)) {
     Udp.write(message, size);
     Udp.endPacket();
   } else {
-    Serial.println("Failed to begin UDP packet!");
+    set_matrix_text("FAIL");
   }
 }
 

@@ -3,17 +3,13 @@
 #include "WiFiS3.h"
 #include "ledmatrix.h"
 
-char ap_ssid[] = "ARDUINO";        // your network SSID (name)
-char ap_pass[] = "12345678";        // your network password (use for WPA, or use as key for WEP)
+char ap_ssid[] = "ARDUINO"; // your network SSID (name)
+char ap_pass[] =
+    "12345678"; // your network password (use for WPA, or use as key for WEP)
 
-
-arduino::IPAddress ap_ip = IPAddress(10,10,1,UID);
-
-bool dhcp = false;
-arduino::IPAddress client_ip = IPAddress(192,168,2,UID); // not used, dhcp
+arduino::IPAddress ap_ip = IPAddress(10, 10, 1, UID);
 
 int net_status = WL_IDLE_STATUS;
-
 
 void wifi_setup_client() {
 
@@ -22,18 +18,21 @@ void wifi_setup_client() {
   if (WiFi.status() == WL_NO_MODULE) {
     Serial.println("Communication with WiFi module failed!");
     // don't continue
-    while (true);
+    while (true)
+      ;
   }
 
   String fv = WiFi.firmwareVersion();
 
   if (fv < WIFI_FIRMWARE_LATEST_VERSION) {
     Serial.println("Please upgrade the firmware");
-    while(true);
+    while (true)
+      ;
   }
 
   // attempt to connect to WiFi network:
-  if(!dhcp) WiFi.config(client_ip);
+  if (!dhcp)
+    WiFi.config(client_ip);
 
   while (net_status != WL_CONNECTED) {
 
@@ -45,7 +44,7 @@ void wifi_setup_client() {
 
     delay(2000);
   }
-  
+
   wifi_connected = net_status == WL_CONNECTED;
 
   set_matrix_text(WiFi.localIP().toString());
@@ -60,13 +59,15 @@ void wifi_setup_ap() {
   if (WiFi.status() == WL_NO_MODULE) {
     Serial.println("Communication with WiFi module failed!");
     // don't continue
-    while (true);
+    while (true)
+      ;
   }
 
   String fv = WiFi.firmwareVersion();
   if (fv < WIFI_FIRMWARE_LATEST_VERSION) {
     Serial.println("Please upgrade the firmware");
-    while (true);
+    while (true)
+      ;
   }
 
   WiFi.config(ap_ip);
@@ -79,17 +80,17 @@ void wifi_setup_ap() {
   if (net_status != WL_AP_LISTENING) {
     Serial.println("Creating access point failed");
     // don't continue
-    while (true);
+    while (true)
+      ;
   }
 
   Serial.println("Started WiFi AP");
-  
 
   set_matrix_text(WiFi.localIP().toString());
 }
 
 void wifi_client_loop() {
-  
+
   // compare the previous status to the current status
   if (net_status != WiFi.status()) {
     // it has changed update the variable
@@ -98,13 +99,12 @@ void wifi_client_loop() {
 
     Serial.print("Wifi status has changed (see WiFiTypes.h) : ");
     Serial.println(net_status);
-    //Serial.println(wl_status_t);
-    
+    // Serial.println(wl_status_t);
   }
 }
 
 void wifi_ap_loop() {
-  
+
   // compare the previous status to the current status
   if (net_status != WiFi.status()) {
     // it has changed update the variable
@@ -113,8 +113,7 @@ void wifi_ap_loop() {
 
     Serial.print("Wifi status has changed : ");
     Serial.println(net_status);
-    //Serial.println(wl_status_t);
-    
+    // Serial.println(wl_status_t);
   }
 }
 
@@ -127,7 +126,6 @@ void printWiFiStatus() {
   String ip = WiFi.localIP().toString();
   Serial.print("IP Address: ");
   Serial.println(ip);
-
 }
 
 #endif
