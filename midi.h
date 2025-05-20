@@ -77,11 +77,13 @@ void send_note_from_dist(uint16_t dist) {
   Note far = note_far.get();
 
   if (dist <= near.max && near.note != 0) {
+    cc_inrange = true;
     if (last_note != near.note) {
       send_note(near.note, 127, midi_channel);
       last_note = near.note;
     }
   } else if (dist >= far.min && far.note != 0) {
+    cc_inrange = true;
     if (last_note != far.note) {
       send_note(far.note, 127, midi_channel);
       last_note = far.note;
@@ -99,7 +101,7 @@ void send_note_from_dist(uint16_t dist) {
       // check notes
       for (int i = 0; i < NB_NOTES; i++) {
         Note note = notes[i].get();
-        if (note.note > 0 && (cc > note.min && cc < note.max)) {
+        if (note.note > 0 && (dist > note.min && dist < note.max)) {
           hit = true;
           if (last_note != note.note) {
             if (last_last_note != note.note) {
@@ -117,12 +119,13 @@ void send_note_from_dist(uint16_t dist) {
       send_cc(1, cc, midi_channel);
       last_cc = cc;
     }
-  } else {
-    if (cc_inrange) {
-      send_cc(1, cc_tmax, midi_channel);
-      cc_inrange = false;
-    }
   }
+  // else {
+  //   if (cc_inrange) {
+  //     send_cc(1, cc_tmax, midi_channel);
+  //     cc_inrange = false;
+  //   }
+  // }
 }
 
 #endif
