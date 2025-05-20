@@ -9,6 +9,9 @@ char ap_pass[] =
 
 arduino::IPAddress ap_ip = IPAddress(10, 10, 1, UID);
 
+bool dhcp = false;
+IPAddress client_ip = IPAddress(192, 168, 2, _UID);
+
 int net_status = WL_IDLE_STATUS;
 
 void wifi_setup_client() {

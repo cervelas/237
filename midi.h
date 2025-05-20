@@ -33,8 +33,6 @@ void midi_end() {
 
 void midi_start() {
   connecting = true;
-  IPAddress remote = WiFi.localIP();
-  remote[3] = midi_remote_id.get();
   Serial.print("trying to connect MIDI Device ");
   Serial.println(remote);
   bool invited = AppleMIDI.sendInvite(remote, DEFAULT_CONTROL_PORT);
@@ -113,7 +111,8 @@ void send_note_from_dist(uint16_t dist) {
       if (hit == false)
         last_note = 0;
 
-      send_cc(1, cc, midi_channel);
+      if (last_cc != cc)
+        send_cc(1, cc, midi_channel);
       last_cc = cc;
     }
   }

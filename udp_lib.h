@@ -13,10 +13,16 @@ bool read(char *buffer, uint8_t size);
 void print_wifi_status();
 
 WiFiUDP Udp;
+IPAddress remote;
 
 void udp_setup() {
-  if (Udp.begin(5000 + UID))
+  remote = WiFi.localIP();
+  remote[3] = midi_remote_id.get();
+
+  if (Udp.begin(5000 + UID)) {
+    Serial.println("Will send packets to: " + remote.toString());
     midi_connected = true;
+  }
 }
 
 void udp_write(byte *message, size_t size) {
@@ -25,7 +31,7 @@ void udp_write(byte *message, size_t size) {
       Serial.print((uint8_t)message[i] + " ");
     Serial.println();
   }
-  if (Udp.beginPacket(client_ip, 5000)) {
+  if (Udp.beginPacket(remote, 5000)) {
     Udp.write(message, size);
     Udp.endPacket();
   } else {
