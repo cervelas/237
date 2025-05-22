@@ -4,6 +4,7 @@ const int trig_pin = 12;
 const int echo_pin = 9;
 
 uint16_t readDistance() {
+  delayMicroseconds(60);
   digitalWrite(trig_pin, LOW);
   delayMicroseconds(2);
   digitalWrite(trig_pin, HIGH);
@@ -31,7 +32,6 @@ void sensor_loop() {
     Serial.println("dist: " + String(dist));
 
   send_note_from_dist(dist);
-  delayMicroseconds(40);
   // if (dist > cc_smin && dist < cc_smax) {
   //   uint16_t avg = moving_avg.reading(dist);
   //   if (debug_sensor)
