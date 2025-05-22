@@ -1,5 +1,4 @@
 #include <EEPROM-Storage.h>
-#include <movingAvg.h>
 #include "config.h"
 
 bool sensor_enabled = true;
