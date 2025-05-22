@@ -12,12 +12,23 @@
 #include <AppleMIDI_Debug.h>
 #include <WiFiS3.h>
 
+// Running average window size
+#define LM_SIZE 10
+
 uint16_t last_cc = 0;
+uint16_t last_dist = 0;
 int last_note = 0;
 int last_last_note = 0;
-movingAvg moving_avg(3);
-
 bool cc_inrange = false;
+
+// the following stuff need to be updated via the UI.
+
+int max_idle_far_counter = 40;
+int max_idle_min_counter = 40;
+
+// ignore completely what is above this. [not used]
+int ultimax_dist = 1000;
+
 
 String name = "A" + String(_UID);
 
@@ -70,14 +81,44 @@ void send_note(int note, int vel = 127, int channel = 1) {
   digitalWrite(LED_BUILTIN, LOW);
 }
 
+
+//do some smoothing https://playground.arduino.cc/Main/RunningAverage/
+
+// Hola liviu, the following (shitty) code is not working for some reasons.
+// please do something better !
+
+uint16_t runningAverage(int M) { 
+  static uint16_t LM[LM_SIZE];      // LastMeasurements
+  static byte index = 0;
+  static uint16_t sum = 0;
+  static byte count = 0;
+
+  // keep sum updated to improve speed.
+  sum -= LM[index];
+  LM[index] = M;
+  sum += LM[index];
+  index++;
+  index = index % LM_SIZE;
+  if (count < LM_SIZE) count++;
+
+  return sum / count;
+}
+
 void send_note_from_dist(uint16_t dist) {
+
   if (debug_raw)
     Serial.println("dist: " + String(dist));
+
+  // this is not working at all....
+  //uint16_t dist = runningAverage(_dist);
 
   Note near = note_near.get();
   Note far = note_far.get();
 
   if (dist > cc_smin && dist < cc_smax) {
+
+    // we also need to reset the idle counter here !
+    idle_counter = 0;
     cc_inrange = true;
     // map the cc
     uint16_t cc = map(dist, cc_smin, cc_smax, cc_tmin, cc_tmax);
@@ -118,7 +159,7 @@ void send_note_from_dist(uint16_t dist) {
     // check for near note
     if (dist <= near.max && near.note != 0) {
       if (last_note != near.note) {
-        if (idle_counter++ > 3) {
+        if (idle_counter++ > max_idle_min_counter) {
           send_note(near.note, 127, midi_channel);
           last_note = near.note;
           idle_counter = 0;
@@ -127,16 +168,21 @@ void send_note_from_dist(uint16_t dist) {
     }
 
     // check for far note
+
+    // note for liviu: the idle_counter does not seems to work... 
     if (dist >= far.min && far.note != 0) {
       if (last_note != far.note) {
-        if (idle_counter++ > 3) {
+        if (idle_counter++ > max_idle_far_counter) {
           send_note(far.note, 127, midi_channel);
           last_note = far.note;
           idle_counter = 0;
         }
       }
     }
+
   }
+
+  last_dist = dist;
 }
 
 #endif
