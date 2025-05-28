@@ -1,29 +1,26 @@
-#if SENSOR == SENSOR_HCSR04
+#if SENSOR == SENSOR_VL53L1X
 
-const int trig_pin = 12;
-const int echo_pin = 9;
+#include "VL53L1X.h"
+
+VL53L1X sensor;
 
 uint16_t readDistance() {
-  delay(60);
-  digitalWrite(trig_pin, LOW);
-  delayMicroseconds(2);
-  digitalWrite(trig_pin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trig_pin, LOW);
-
-  float duration = pulseIn(echo_pin, HIGH);
-  float distanceF = duration * 0.0343 / 2;
-  uint16_t distance = static_cast<uint16_t>(distanceF);
-
-  return distance;
+  int dist = sensor.readSingle() / 10;
+  // Serial.println("dist tof: " + String(dist));
+  if (dist < 1)
+    dist = 0;
+  delay(50);
+  return static_cast<uint16_t>(dist);
 }
 
 void sensor_setup() {
-  pinMode(trig_pin, OUTPUT);
-
-  pinMode(echo_pin, INPUT_PULLUP);
-
-  Serial.println(F("Setup Done."));
+  // VL53L1X::DistanceMode range_mode = VL53L1X::Short;
+  VL53L1X::DistanceMode range_mode = VL53L1X::Medium;
+  Wire.begin();
+  sensor.setTimeout(500);
+  sensor.init();
+  sensor.setDistanceMode(range_mode);
+  sensor.setMeasurementTimingBudget(140000);
 }
 
 void sensor_loop() {

@@ -80,6 +80,7 @@ void logln(auto text) {
 #include "sensorHMMD.h"
 #include "sensorLD2410.h"
 #include "sensorHC-SR04.h"
+#include "sensorVL53L1X.h"
 
 // ui in last because some interface are defined in sensor headers
 #include "ui.h"
