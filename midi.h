@@ -6,6 +6,12 @@
 #include "ledmatrix.h"
 #include "udp_lib.h"
 
+// Values for Median Filtering & Consistency Checking
+#define HISTORY_SIZE 5
+uint16_t readings[HISTORY_SIZE];
+int index = 0;
+bool filter_init = false;
+
 uint16_t last_cc = 0;
 uint16_t last_dist = 0;
 int last_note = 0;
@@ -36,6 +42,41 @@ void send_note(int note, int vel = 127, int channel = 1) {
     digitalWrite(LED_BUILTIN, HIGH);
     delay(5);
     digitalWrite(LED_BUILTIN, LOW);
+}
+
+uint16_t filter_dist(uint16_t dist) {
+    // Fallback for invalid readings
+    if (dist == 0)
+        return readings[(index + HISTORY_SIZE - 1) % HISTORY_SIZE];
+
+    readings[index] = dist;
+    index = (index + 1) % HISTORY_SIZE;
+
+    if (!filter_init && index == 0)
+        filter_init = true;
+
+    if (!filter_init)
+        return dist;
+
+    uint16_t sorted[HISTORY_SIZE];
+    memcpy(sorted, readings, sizeof(readings));
+
+    for (int i = 0; i < HISTORY_SIZE - 1; i++) {
+        for (int j = 0; j < HISTORY_SIZE - i - 1; j++) {
+            if (sorted[j] > sorted[j + 1]) {
+                long temp = sorted[j];
+                sorted[j] = sorted[j + 1];
+                sorted[j + 1] = temp;
+            }
+        }
+    }
+
+    uint16_t median = sorted[HISTORY_SIZE / 2];
+
+    if (abs(dist - median) > 10)
+        return median;
+
+    return dist;
 }
 
 // TODO: implement filtering here
