@@ -9,7 +9,10 @@
 // Values for Median Filtering & Consistency Checking
 #define HISTORY_SIZE 5
 uint16_t readings[HISTORY_SIZE];
+// The index indicates where should we input the current reading that we are
+// doing
 int index = 0;
+// This init value indicates that at least HISTORY_SIZE readings have been done
 bool filter_init = false;
 
 uint16_t last_cc = 0;
@@ -17,28 +20,42 @@ uint16_t last_dist = 0;
 int last_note = 0;
 bool cc_inrange = false;
 
+// Function to send cc over UDP
 void send_cc(int cc, int value, int channel = 1) {
-    if (debug_midi)
-        Serial.println("Send cc: " + String(cc) + " value: " + String(value));
+    // if (debug_midi)
+    //     Serial.println("Send cc: " + String(cc) + " value: " +
+    //     String(value));
 
+    // Construct message byte array as settled in the protocol spec
+    // BYTE 0 -> Type of the message (2 for cc)
+    // BYTE 1 -> The channel
+    // BYTE 2 -> The cc we are affecting
+    // BYTE 3 -> The actual value
     byte message[4];
     message[0] = 2;
     message[1] = channel;
     message[2] = cc;
     message[3] = value;
-    udp_write(message, sizeof(message) * 4);
+    udp_write(message, sizeof(message));
 }
 
+// Function to send note over UDP
 void send_note(int note, int vel = 127, int channel = 1) {
     if (debug_midi)
         Serial.println("Send note: " + String(note));
 
+    // Construct message byte array as settled in the protocol spec
+    // BYTE 0 -> Type of the message (1 for note)
+    // BYTE 1 -> The channel
+    // BYTE 2 -> The note
+    // BYTE 3 -> The velocity
     byte message[4];
     message[0] = 1;
     message[1] = channel;
     message[2] = note;
     message[3] = vel;
-    udp_write(message, sizeof(message) * 4);
+    udp_write(message, sizeof(message));
+    // Light builtin led for dev purposes
     digitalWrite(LED_BUILTIN, HIGH);
     delay(5);
     digitalWrite(LED_BUILTIN, LOW);
@@ -49,15 +66,20 @@ uint16_t filter_dist(uint16_t dist) {
     if (dist == 0)
         return readings[(index + HISTORY_SIZE - 1) % HISTORY_SIZE];
 
+    // Insert the current reading in the array, and increment index
     readings[index] = dist;
     index = (index + 1) % HISTORY_SIZE;
 
+    // If filter was not initialized and we reach 0 (so we made the first
+    // HISTORY_SIZE readings) the filter is initialized
     if (!filter_init && index == 0)
         filter_init = true;
 
+    // If filter is not initialized, just return the raw distance
     if (!filter_init)
         return dist;
 
+    // Allocate memory to copy the readings array and sort it
     uint16_t sorted[HISTORY_SIZE];
     memcpy(sorted, readings, sizeof(readings));
 
@@ -71,19 +93,24 @@ uint16_t filter_dist(uint16_t dist) {
         }
     }
 
+    // Compute the median
     uint16_t median = sorted[HISTORY_SIZE / 2];
 
+    // If the distance between the new reading and the median is greater than an
+    // arbitrary threshold, return the median for smooth response
     if (abs(dist - median) > 10)
         return median;
 
+    // If not return the raw distance
     return dist;
 }
 
-// TODO: implement filtering here
+// Unification function for distance reading, filtering and UDP sending
 void send_note_from_dist(uint16_t dist) {
     if (debug_raw)
         Serial.println("dist: " + String(dist));
 
+    // Fetch values for near and far note
     Note near = note_near.get();
     Note far = note_far.get();
 
@@ -118,7 +145,15 @@ void send_note_from_dist(uint16_t dist) {
             cc_inrange = false;
         }
 
-        // TODO: checks for far and near note
+        // Checks for far and near note
+        if (dist >= far.max && last_note != far.note) {
+            send_note(far.note, 127, midi_channel);
+            last_note = far.note;
+        }
+        if (dist <= near.min && last_note != near.note) {
+            send_note(near.note, 127, midi_channel);
+            last_note = near.note;
+        }
     }
 
     last_dist = dist;

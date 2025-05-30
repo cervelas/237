@@ -26,11 +26,11 @@ void udp_setup() {
 }
 
 void udp_write(byte* message, size_t size) {
-    if (debug_midi) {
-        for (int i = 0; i < 4; i++)
-            Serial.print((uint8_t)message[i] + " ");
-        Serial.println();
-    }
+    // if (debug_midi) {
+    //     for (int i = 0; i < 4; i++)
+    //         Serial.print((uint8_t)message[i] + " ");
+    //     Serial.println();
+    // }
     if (Udp.beginPacket(remote, 5000)) {
         Udp.write(message, size);
         Udp.endPacket();
