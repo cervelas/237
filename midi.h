@@ -7,7 +7,7 @@
 #include "udp_lib.h"
 
 // Values for Median Filtering & Consistency Checking
-#define HISTORY_SIZE 5
+#define HISTORY_SIZE 3
 uint16_t readings[HISTORY_SIZE];
 // The index indicates where should we input the current reading that we are
 // doing

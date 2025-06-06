@@ -3,6 +3,8 @@
 const int trig_pin = 12;
 const int echo_pin = 9;
 
+uint32_t prev_tick = 0;
+
 uint16_t readDistance() {
     // delay between readings
     delay(60);
@@ -38,13 +40,20 @@ void sensor_setup() {
 }
 
 void sensor_loop() {
-    uint16_t dist = readDistance();
-    dist = filter_dist(dist);
+    uint32_t t = syncedTime();
+    uint32_t slotTime =
+        (t - offsetMs + SLOT_MS) % 60000;  // minute rollover safe
+    uint32_t tick = slotTime / SLOT_MS;
 
-    if (debug_raw)
-        Serial.println("dist: " + String(dist));
+    if (tick != prev_tick) {
+        uint16_t dist = readDistance();
+        dist = filter_dist(dist);
 
-    send_note_from_dist(dist);
+        if (debug_raw)
+            Serial.println("dist: " + String(dist));
+
+        send_note_from_dist(dist);
+    }
 }
 
 #endif

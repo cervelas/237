@@ -15,11 +15,14 @@ void print_wifi_status();
 WiFiUDP Udp;
 IPAddress remote;
 
+volatile int32_t timeOffset = 0;
+
 void udp_setup() {
     remote = WiFi.localIP();
     remote[3] = midi_remote_id.get();
 
-    if (Udp.begin(5000 + UID)) {
+    // if (Udp.begin(5000 + UID)) {
+    if (Udp.begin(5000)) {
         Serial.println("Will send packets to: " + remote.toString());
         udp_connected = true;
     }
@@ -51,5 +54,20 @@ bool udp_read(char* buffer, uint8_t size) {
 
     return false;
 }
+
+void check_time_sync() {
+    int packetSize = Udp.parsePacket();
+    if (packetSize == 4) {
+        byte buffer[4];
+        Udp.read(buffer, 4);
+        uint32_t remoteTime = ((uint32_t)buffer[0] << 24) |
+                              ((uint32_t)buffer[1] << 16) |
+                              ((uint32_t)buffer[2] << 8) | (uint32_t)buffer[3];
+        uint32_t receiveTime = millis();
+        timeOffset = (int32_t)remoteTime - (int32_t)receiveTime;
+    }
+}
+
+uint32_t syncedTime() { return millis() + timeOffset; }
 
 #endif

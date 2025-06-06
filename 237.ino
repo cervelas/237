@@ -8,6 +8,7 @@ bool sensor_enabled = true;
 char client_ssid[] = WIFI_SSID;
 char client_pass[] = WIFI_PASS;
 bool wifi_connected = false;
+uint16_t offsetMs = ((_UID - 3) * SLOT_MS) / NUM_DEVICES;
 
 // Storage for UI and midi
 EEPROMStorage<uint8_t> UID(0, _UID);
@@ -98,6 +99,8 @@ void setup() {
 }
 
 void loop() {
+    check_time_sync();
+
     leds_show();
     wifi_client_loop();
     if (udp_connected.get() == true && midi_enable.get() == true)

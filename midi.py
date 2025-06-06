@@ -26,7 +26,6 @@ class UdpController:
     def write(self, message: str):
         self.sock.sendto(message.encode(), (self.listen_ip, self.port))
 
-
 class MidiController:
     def __init__(self):
         self.midi_out = rtmidi2.MidiOut()
@@ -73,4 +72,3 @@ if __name__ == "__main__":
                 midi_controller.send_cc(channel, cc_or_note, value_velo)
 
     midi_controller.clean()
-
