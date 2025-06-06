@@ -1,6 +1,7 @@
 #include <EEPROM-Storage.h>
 
 #include "config.h"
+#include "utils.h"
 
 bool sensor_enabled = true;
 

@@ -65,6 +65,8 @@ void check_time_sync() {
                               ((uint32_t)buffer[2] << 8) | (uint32_t)buffer[3];
         uint32_t receiveTime = millis();
         timeOffset = (int32_t)remoteTime - (int32_t)receiveTime;
+
+        Serial.println("Recieved time sync: " + format_time(remoteTime));
     }
 }
 

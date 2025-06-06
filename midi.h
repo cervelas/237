@@ -107,9 +107,6 @@ uint16_t filter_dist(uint16_t dist) {
 
 // Unification function for distance reading, filtering and UDP sending
 void send_note_from_dist(uint16_t dist) {
-    if (debug_raw)
-        Serial.println("dist: " + String(dist));
-
     // Fetch values for near and far note
     Note near = note_near.get();
     Note far = note_far.get();

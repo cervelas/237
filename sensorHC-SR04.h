@@ -7,6 +7,7 @@ uint32_t prev_tick = 0;
 
 uint16_t readDistance() {
     // delay between readings
+    // To check, we'll need to manage using the sync time system maybe
     delay(60);
 
     digitalWrite(trig_pin, LOW);
@@ -50,9 +51,13 @@ void sensor_loop() {
         dist = filter_dist(dist);
 
         if (debug_raw)
-            Serial.println("dist: " + String(dist));
+            Serial.println("dist: " + String(dist) + " tick: " + String(tick) +
+                           " slot time: " + String(slotTime) + " syncedTime: " +
+                           String(t) + " offsetMs: " + String(offsetMs));
 
         send_note_from_dist(dist);
+
+        prev_tick = tick;
     }
 }
 
