@@ -56,7 +56,7 @@ EEPROMStorage<bool> midi_enable(midi_channel.nextAddress(), true);
 EEPROMStorage<Note> note_far(midi_enable.nextAddress(), {0, 0, 0});
 EEPROMStorage<Note> note_near(note_far.nextAddress(), {0, 0, 0});
 
-String status = "";
+String status = "";  // used in ui.h
 String _log = {};
 
 void log(auto text) {

@@ -60,9 +60,10 @@ void check_time_sync() {
     if (packetSize == 4) {
         byte buffer[4];
         Udp.read(buffer, 4);
-        uint32_t remoteTime = ((uint32_t)buffer[0] << 24) |
-                              ((uint32_t)buffer[1] << 16) |
-                              ((uint32_t)buffer[2] << 8) | (uint32_t)buffer[3];
+        uint32_t remoteTime = ((uint32_t)buffer[0] << 24) |  //
+                              ((uint32_t)buffer[1] << 16) |  //
+                              ((uint32_t)buffer[2] << 8) |   //
+                              (uint32_t)buffer[3];
         uint32_t receiveTime = millis();
         timeOffset = (int32_t)remoteTime - (int32_t)receiveTime;
 
