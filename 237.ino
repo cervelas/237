@@ -11,6 +11,7 @@ char client_pass[] = WIFI_PASS;
 bool wifi_connected = false;
 
 // Storage for UI and midi
+uint8_t midi_channel = _CHANNEL;
 EEPROMStorage<uint8_t> UID(0, _UID);
 
 EEPROMStorage<bool> debug_cc(UID.nextAddress(), true);
@@ -18,8 +19,8 @@ EEPROMStorage<bool> debug_sensor(debug_cc.nextAddress(), false);
 EEPROMStorage<bool> debug_raw(debug_sensor.nextAddress(), false);
 EEPROMStorage<bool> debug_midi(debug_raw.nextAddress(), false);
 
-EEPROMStorage<uint8_t> cc_avg(debug_midi.nextAddress(), 3);
-EEPROMStorage<uint16_t> cc_smin(cc_avg.nextAddress(), 30);
+// EEPROMStorage<uint8_t> cc_avg(debug_midi.nextAddress(), 3);
+EEPROMStorage<uint16_t> cc_smin(debug_midi.nextAddress(), 30);
 EEPROMStorage<uint16_t> cc_smax(cc_smin.nextAddress(), 300);
 EEPROMStorage<uint16_t> cc_tmin(cc_smax.nextAddress(), 0);
 EEPROMStorage<uint16_t> cc_tmax(cc_tmin.nextAddress(), 127);
@@ -47,10 +48,10 @@ EEPROMStorage<Note> notes[NB_NOTES] = {note1, note2, note3, note4, note5,
                                        note6, note7, note8, note9, note10};
 
 // Midi global var
-EEPROMStorage<bool> udp_connected(note7.nextAddress(), false);
+EEPROMStorage<bool> udp_connected(note10.nextAddress(), false);
 EEPROMStorage<uint8_t> midi_remote_id(udp_connected.nextAddress(), 33);
-EEPROMStorage<uint8_t> midi_channel(midi_remote_id.nextAddress(), _CHANNEL);
-EEPROMStorage<bool> midi_enable(midi_channel.nextAddress(), true);
+// EEPROMStorage<uint8_t> midi_channel(midi_remote_id.nextAddress(), _CHANNEL);
+EEPROMStorage<bool> midi_enable(midi_remote_id.nextAddress(), true);
 
 EEPROMStorage<Note> note_far(midi_enable.nextAddress(), {0, 0, 0});
 EEPROMStorage<Note> note_near(note_far.nextAddress(), {0, 0, 0});
