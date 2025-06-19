@@ -335,43 +335,43 @@ void get_req_cb(ArduinoHttpServer::HttpResource resource) {
 }
 
 void render_page(WiFiClient client) {
-    String tpl =
-        F("HTTP/1.1 200 OK\r\n"          //
-          "Content-Type: text/html\r\n"  //
-          "\r\n"                         //
-          "<!doctype html>\n"            //
-          "<html>\n"
-          "<head>\n"
-          "<meta charset='utf-8'>\n"                               //
-          "<meta name='viewport' content='width=device-width'>\n"  //
-          // Begin embedded Milligram-style CSS (minimal subset)
-          "<style>"
-          "*,:after,:before{box-sizing:inherit}"         //
-          "html{box-sizing:border-box;font-size:62.5%}"  //
-          "body{color:#606c76;font-family:'Roboto','Helvetica "
-          "Neue','Helvetica','Arial',sans-serif;"
-          "font-size:1.6em;font-weight:300;letter-spacing:.01em;line-height:"
-          "1.6}"                                                          //
-          "h1,h2,h3,h4,h5,h6{font-weight:300;margin:0 0 2rem 0}"          //
-          "h1{font-size:4.6rem}h2{font-size:3.6rem}h3{font-size:2.8rem}"  //
-          ".float-right{float:right}"                                     //
-          ".container{margin:0 auto;max-width:112rem;padding:0 "
-          "2rem;width:100%}"              //
-          "fieldset{border:0;padding:0}"  //
-          "input,select,textarea{width:100%;height:3.8rem;padding:.6rem 1rem;"
-          "border:0.1rem solid #d1d1d1;border-radius:.4rem}"  //
-          "input[type='submit']{background-color:#9b4dca;border:none;color:#"
-          "fff;"
-          "font-weight:700;cursor:pointer}"                              //
-          "input[type='submit']:hover{background-color:#606c76}"         //
-          "a{color:#9b4dca;text-decoration:none}a:hover{color:#606c76}"  //
-          "hr{border:0;border-top:0.1rem solid #f4f5f6;margin:3rem 0}"   //
-          "</style>\n"
-          "<title>{{title}}</title>\n"  //
-          "</head>\n"
-          "<body>\n"
-          "<div>{{status}}</div>\n"  //
-        );
+    String tpl = F(
+        "HTTP/1.1 200 OK\r\n"          //
+        "Content-Type: text/html\r\n"  //
+        "\r\n"                         //
+        "<!doctype html>\n"            //
+        "<html>\n"
+        "<head>\n"
+        "<meta charset='utf-8'>\n"                               //
+        "<meta name='viewport' content='width=device-width'>\n"  //
+        // Begin embedded Milligram-style CSS (minimal subset)
+        "<style>"
+        "*,:after,:before{box-sizing:inherit}"         //
+        "html{box-sizing:border-box;font-size:62.5%}"  //
+        "body{color:#606c76;font-family:'Roboto','Helvetica "
+        "Neue','Helvetica','Arial',sans-serif;"
+        "font-size:1.6em;font-weight:300;letter-spacing:.01em;line-height:"
+        "1.6}"                                                          //
+        "h1,h2,h3,h4,h5,h6{font-weight:300;margin:0 0 2rem 0}"          //
+        "h1{font-size:4.6rem}h2{font-size:3.6rem}h3{font-size:2.8rem}"  //
+        ".float-right{float:right}"                                     //
+        ".container{margin:0 auto;max-width:112rem;padding:0 "
+        "2rem;width:100%}"                                                    //
+        "fieldset{border:0;padding:0}"                                        //
+        "input,select,textarea{width:100%;height:3.8rem;padding:.6rem 1rem;"  //
+        "border:0.1rem solid #d1d1d1;border-radius:.4rem}"                    //
+        "input[type='submit']{background-color:#9b4dca;border:none;color:#"
+        "fff;"
+        "font-weight:700;cursor:pointer}"                              //
+        "input[type='submit']:hover{background-color:#606c76}"         //
+        "a{color:#9b4dca;text-decoration:none}a:hover{color:#606c76}"  //
+        "hr{border:0;border-top:0.1rem solid #f4f5f6;margin:3rem 0}"   //
+        "</style>\n"
+        "<title>{{title}}</title>\n"  //
+        "</head>\n"
+        "<body>\n"
+        "<div>{{status}}</div>\n"  //
+    );
 
     tpl.replace("{{status}}", String(status));
     tpl.replace("{{title}}", String(UID));
