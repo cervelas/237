@@ -3,8 +3,6 @@
 const int trig_pin = 12;
 const int echo_pin = 9;
 
-uint32_t prev_tick = 0;
-
 uint16_t readDistance() {
     // delay between readings
     // To check, we'll need to manage using the sync time system maybe
@@ -41,23 +39,14 @@ void sensor_setup() {
 }
 
 void sensor_loop() {
-    uint32_t t = syncedTime();
-    uint32_t slotTime =
-        (t - offsetMs + SLOT_MS) % 60000;  // minute rollover safe
-    uint32_t tick = slotTime / SLOT_MS;
-
     if (tick != prev_tick) {
         uint16_t dist = readDistance();
         dist = filter_dist(dist);
 
         if (debug_raw)
-            Serial.println("dist: " + String(dist) + " tick: " + String(tick) +
-                           " slot time: " + String(slotTime) + " syncedTime: " +
-                           String(t) + " offsetMs: " + String(offsetMs));
+            Serial.println("dist: " + String(dist));
 
         send_note_from_dist(dist);
-
-        prev_tick = tick;
     }
 }
 

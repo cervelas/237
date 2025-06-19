@@ -8,12 +8,7 @@
 // used by :
 //    midi for default channel
 //    network for ipaddr
-#define _UID 14
-
-// Time slot measurements for Ultrasound
-// Deprecated i think?
-#define NUM_DEVICES 3
-#define SLOT_MS 60
+#define _UID 3
 
 #define SENSOR_APDS9960 1
 #define SENSOR_HMMD 2
@@ -21,6 +16,6 @@
 #define SENSOR_HCSR04 5
 #define SENSOR_VL53L1X 6
 
-#define SENSOR SENSOR_HCSR04
+#define SENSOR SENSOR_VL53L1X
 
 #endif
