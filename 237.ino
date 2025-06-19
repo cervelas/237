@@ -49,7 +49,7 @@ EEPROMStorage<Note> notes[NB_NOTES] = {note1, note2, note3, note4, note5,
 // Midi global var
 EEPROMStorage<bool> udp_connected(note7.nextAddress(), false);
 EEPROMStorage<uint8_t> midi_remote_id(udp_connected.nextAddress(), 33);
-EEPROMStorage<uint8_t> midi_channel(midi_remote_id.nextAddress(), _UID);
+EEPROMStorage<uint8_t> midi_channel(midi_remote_id.nextAddress(), _CHANNEL);
 EEPROMStorage<bool> midi_enable(midi_channel.nextAddress(), true);
 
 EEPROMStorage<Note> note_far(midi_enable.nextAddress(), {0, 0, 0});
