@@ -3,6 +3,8 @@
 #include "config.h"
 #include "utils.h"
 
+#define NB_CCS 4
+
 bool sensor_enabled = true;
 
 // WiFi related variables
@@ -55,8 +57,6 @@ EEPROMStorage<Note> note10(note9.nextAddress(), {0, 0, 0});
 
 EEPROMStorage<Note> notes[NB_NOTES] = {note1, note2, note3, note4, note5,
                                        note6, note7, note8, note9, note10};
-
-#define NB_CCS 4
 
 EEPROMStorage<CC> cc1(note10.nextAddress(), {1, 2, 150, 0, 127, false});
 EEPROMStorage<CC> cc2(cc1.nextAddress(), {2, 2, 150, 0, 127, false});

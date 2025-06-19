@@ -15,10 +15,10 @@ int index = 0;
 // This init value indicates that at least HISTORY_SIZE readings have been done
 bool filter_init = false;
 
-uint16_t last_cc = 0;
+uint16_t last_cc[NB_CCS] = {0, 0, 0, 0};
 uint16_t last_dist = 0;
 int last_note = 0;
-bool cc_inrange = false;
+bool cc_inrange[NB_CCS] = {false, false, false, false};
 
 // Function to send cc over UDP
 void send_cc(int cc, int value, int channel = 1) {
@@ -106,56 +106,91 @@ uint16_t filter_dist(uint16_t dist) {
     return dist;
 }
 
+void treat_cc(CC cc, uint16_t dist) {
+    int id = cc.cc - 1;
+
+    if (!cc.enabled)
+        return;
+
+    if (dist > cc.smin && dist < cc.smax) {
+        cc_inrange[id] = true;
+        uint16_t cc_val = map(dist, cc.smin, cc.smax, cc.tmin, cc.tmax);
+
+        if (udp_connected && cc_val != last_cc[id]) {
+            if (debug_cc)
+                Serial.println("cc" + String(id) + ": " + String(cc_val));
+
+            send_cc(cc.cc, cc_val, midi_channel);
+            last_cc[id] = cc_val;
+        }
+    } else {
+        if (cc_inrange[id]) {
+            if (debug_cc)
+                Serial.println("cc" + String(id) + ": " + String(cc.tmax));
+
+            send_cc(cc.cc, cc.tmax, midi_channel);
+            cc_inrange[id] = false;
+        }
+    }
+}
+
 // Unification function for distance reading, filtering and UDP sending
 void send_note_from_dist(uint16_t dist) {
     // Fetch values for near and far note
-    Note near = note_near.get();
-    Note far = note_far.get();
+    // Note near = note_near.get();
+    // Note far = note_far.get();
+    // CC cc1 = ccs[0].get();
+    //
+    // if (dist > cc1.smin && dist < cc1.smax) {
+    //     cc_inrange = true;
+    //     // map the cc
+    //     uint16_t cc = map(dist, cc1.smin, cc1.smax, cc1.tmin, cc1.tmax);
+    //
+    //     // test last cc
+    //     if (udp_connected == true && cc != last_cc) {
+    //         if (debug_cc)
+    //             Serial.println("cc: " + String(cc));
+    //         // check notes
+    //         for (int i = 0; i < NB_NOTES; i++) {
+    //             Note note = notes[i].get();
+    //             if (note.note > 0 && (dist >= note.min && dist <= note.max))
+    //             {
+    //                 if (last_note != note.note) {
+    //                     send_note(note.note, 127, midi_channel);
+    //                     last_note = note.note;
+    //                     break;
+    //                 }
+    //             }
+    //         }
+    //
+    //         send_cc(cc1.cc, cc, midi_channel);
+    //         last_cc = cc;
+    //     }
+    // } else {
+    //     // send cc max once
+    //     if (cc_inrange) {
+    //         if (debug_cc)
+    //             Serial.println("cc: " + String(cc1.tmax));
+    //
+    //         send_cc(cc1.cc, cc1.tmax, midi_channel);
+    //         cc_inrange = false;
+    //     }
+    //
+    //     // Checks for far and near note
+    //     if (dist >= far.min && last_note != far.note) {
+    //         send_note(far.note, 127, midi_channel);
+    //         last_note = far.note;
+    //     }
+    //     if (dist <= near.max && last_note != near.note) {
+    //         send_note(near.note, 127, midi_channel);
+    //         last_note = near.note;
+    //     }
+    // }
 
-    if (dist > cc_smin && dist < cc_smax) {
-        cc_inrange = true;
-        // map the cc
-        uint16_t cc = map(dist, cc_smin, cc_smax, cc_tmin, cc_tmax);
-
-        // test last cc
-        if (udp_connected == true && cc != last_cc) {
-            if (debug_cc)
-                Serial.println("cc: " + String(cc));
-            // check notes
-            for (int i = 0; i < NB_NOTES; i++) {
-                Note note = notes[i].get();
-                if (note.note > 0 && (dist >= note.min && dist <= note.max)) {
-                    if (last_note != note.note) {
-                        send_note(note.note, 127, midi_channel);
-                        last_note = note.note;
-                        break;
-                    }
-                }
-            }
-
-            send_cc(1, cc, midi_channel);
-            last_cc = cc;
-        }
-    } else {
-        // send cc max once
-        if (cc_inrange) {
-            if (debug_cc)
-                Serial.println("cc: " + String(cc_tmax));
-
-            send_cc(1, cc_tmax, midi_channel);
-            cc_inrange = false;
-        }
-
-        // Checks for far and near note
-        if (dist >= far.min && last_note != far.note) {
-            send_note(far.note, 127, midi_channel);
-            last_note = far.note;
-        }
-        if (dist <= near.max && last_note != near.note) {
-            send_note(near.note, 127, midi_channel);
-            last_note = near.note;
-        }
-    }
+    treat_cc(ccs[0].get(), dist);
+    treat_cc(ccs[1].get(), dist);
+    treat_cc(ccs[2].get(), dist);
+    treat_cc(ccs[3].get(), dist);
 
     last_dist = dist;
 }
