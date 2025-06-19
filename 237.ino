@@ -31,6 +31,15 @@ typedef struct {
     uint8_t note;
 } Note, *pnotes;
 
+typedef struct {
+    uint8_t cc;
+    uint16_t smin;
+    uint16_t smax;
+    uint8_t tmin;
+    uint8_t tmax;
+    bool enabled;
+} CC;
+
 #define NB_NOTES 10
 
 EEPROMStorage<Note> note1(cc_tmax.nextAddress(), {0, 0, 0});
@@ -47,8 +56,17 @@ EEPROMStorage<Note> note10(note9.nextAddress(), {0, 0, 0});
 EEPROMStorage<Note> notes[NB_NOTES] = {note1, note2, note3, note4, note5,
                                        note6, note7, note8, note9, note10};
 
+#define NB_CCS 4
+
+EEPROMStorage<CC> cc1(note10.nextAddress(), {1, 2, 150, 0, 127, false});
+EEPROMStorage<CC> cc2(cc1.nextAddress(), {2, 2, 150, 0, 127, false});
+EEPROMStorage<CC> cc3(cc2.nextAddress(), {3, 2, 150, 0, 127, false});
+EEPROMStorage<CC> cc4(cc3.nextAddress(), {4, 2, 150, 0, 127, false});
+
+EEPROMStorage<CC> ccs[NB_CCS] = {cc1, cc2, cc3, cc4};
+
 // Midi global var
-EEPROMStorage<bool> udp_connected(note10.nextAddress(), false);
+EEPROMStorage<bool> udp_connected(cc4.nextAddress(), false);
 EEPROMStorage<uint8_t> midi_remote_id(udp_connected.nextAddress(), 33);
 // EEPROMStorage<uint8_t> midi_channel(midi_remote_id.nextAddress(), _CHANNEL);
 EEPROMStorage<bool> midi_enable(midi_remote_id.nextAddress(), true);

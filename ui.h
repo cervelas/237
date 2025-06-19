@@ -80,14 +80,12 @@ void midi_post_handler(String url, String name, String value) {
     }
 }
 
-void render_cc_ctrl(EEPROMStorage<uint16_t> smin, EEPROMStorage<uint16_t> smax,
-                    EEPROMStorage<uint16_t> tmin, EEPROMStorage<uint16_t> tmax,
-                    WiFiClient client) {
-    String tpl = F(                                    //
-        "<form method='post' action='/cc'><fieldset>"  //
+void render_cc_ctrl(EEPROMStorage<CC> cc, WiFiClient client) {
+    String tpl = F(                                             //
+        "<form method='post' action='/cc{{cc_id}}'><fieldset>"  //
         "<div class='float-right'><input type='submit' "
-        "value='Update'></div>"  //
-        "<h3>MIDI CC</h3>"       //
+        "value='Update'></div>"       //
+        "<h3>MIDI CC {{cc_id}}</h3>"  //
 
         "<label for='cc_smin'>Source MIN CC</label>"         //
         "<input type='number' id='cc_smin' name='cc_smin' "  //
@@ -109,27 +107,35 @@ void render_cc_ctrl(EEPROMStorage<uint16_t> smin, EEPROMStorage<uint16_t> smax,
         "<hr>"                //
     );                        //
 
-    tpl.replace("{{cc_smin}}", String(smin.get()));
-    tpl.replace("{{cc_smax}}", String(smax.get()));
-    tpl.replace("{{cc_tmin}}", String(tmin.get()));
-    tpl.replace("{{cc_tmax}}", String(tmax.get()));
+    tpl.replace("{{cc_id}}", String(cc.get().cc));
+    tpl.replace("{{cc_smin}}", String(cc.get().smin));
+    tpl.replace("{{cc_smax}}", String(cc.get().smax));
+    tpl.replace("{{cc_tmin}}", String(cc.get().tmin));
+    tpl.replace("{{cc_tmax}}", String(cc.get().tmax));
 
     client.println(tpl);
 }
 
 void cc_post_handler(String url, String name, String value) {
-    if (url.endsWith("cc")) {
+    if (url.startsWith("/cc")) {
+        String scc_id = String(url[3]);
+        int cc_id = atoi(scc_id.c_str());
+
+        CC cc = ccs[cc_id - 1].get();
+
         if (name.compareTo("cc_smin") == 0)
-            cc_smin.set(atoi(value.c_str()));
+            cc.smin = atoi(value.c_str());
 
         if (name.compareTo("cc_smax") == 0)
-            cc_smax.set(atoi(value.c_str()));
+            cc.smax = atoi(value.c_str());
 
         if (name.compareTo("cc_tmin") == 0)
-            cc_tmin.set(atoi(value.c_str()));
+            cc.tmin = atoi(value.c_str());
 
         if (name.compareTo("cc_tmax") == 0)
-            cc_tmax.set(atoi(value.c_str()));
+            cc.tmax = atoi(value.c_str());
+
+        ccs[cc_id - 1] = cc;
     }
 }
 
@@ -262,7 +268,10 @@ void cc_note_handler(String url, String name, String value) {
 void render_ui_body(WiFiClient client) {
     render_midi_ctrl(client);
 
-    render_cc_ctrl(cc_smin, cc_smax, cc_tmin, cc_tmax, client);
+    render_cc_ctrl(ccs[0], client);
+    render_cc_ctrl(ccs[1], client);
+    render_cc_ctrl(ccs[2], client);
+    render_cc_ctrl(ccs[3], client);
 
     render_near_note_ctrl(note_near.get().max, note_near.get().note, client);
     render_far_note_ctrl(note_far.get().min, note_far.get().note, client);
