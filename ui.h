@@ -83,8 +83,16 @@ void midi_post_handler(String url, String name, String value) {
 void render_cc_ctrl(EEPROMStorage<CC> cc, WiFiClient client) {
     String tpl = F(                                             //
         "<form method='post' action='/cc{{cc_id}}'><fieldset>"  //
-        "<div class='float-right'><input type='submit' "
-        "value='Update'></div>"       //
+        "<div class='float-right'>"                             //
+        "<label style='display:inline-flex; align-items:center; "
+        "gap:0.5rem;'>"                                      //
+        "<input type='hidden' name='cc_enabled' value='0'>"  //
+        "<input type='checkbox' id='cc_enabled' name='cc_enabled' value='1' "
+        "{{checked}}>"                          //
+        "<input type='submit' value='Update'>"  //
+        "</label>"                              //
+        "</div>"                                //
+
         "<h3>MIDI CC {{cc_id}}</h3>"  //
 
         "<label for='cc_smin'>Source MIN CC</label>"         //
@@ -105,13 +113,17 @@ void render_cc_ctrl(EEPROMStorage<CC> cc, WiFiClient client) {
 
         "</fieldset></form>"  //
         "<hr>"                //
-    );                        //
+    );
 
+    // Fill in values
     tpl.replace("{{cc_id}}", String(cc.get().cc));
     tpl.replace("{{cc_smin}}", String(cc.get().smin));
     tpl.replace("{{cc_smax}}", String(cc.get().smax));
     tpl.replace("{{cc_tmin}}", String(cc.get().tmin));
     tpl.replace("{{cc_tmax}}", String(cc.get().tmax));
+
+    // Conditional checkbox state
+    tpl.replace("{{checked}}", cc.get().enabled ? "checked" : "");
 
     client.println(tpl);
 }
@@ -134,6 +146,9 @@ void cc_post_handler(String url, String name, String value) {
 
         if (name.compareTo("cc_tmax") == 0)
             cc.tmax = atoi(value.c_str());
+
+        if (name.compareTo("cc_enabled") == 0)
+            cc.enabled = (value.compareTo("1") == 0);
 
         ccs[cc_id - 1] = cc;
     }
