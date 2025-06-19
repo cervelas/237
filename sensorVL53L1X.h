@@ -10,7 +10,8 @@ uint16_t readDistance() {
     int dist = sensor.read() / 10;
 
     if (sensor.ranging_data.range_status)
-        dist = 0;
+        // dist = 0;
+        dist = std::numeric_limits<uint16_t>::max();
 
     return static_cast<uint16_t>(dist);
 }

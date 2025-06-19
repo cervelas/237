@@ -63,8 +63,9 @@ void send_note(int note, int vel = 127, int channel = 1) {
 
 uint16_t filter_dist(uint16_t dist) {
     // Fallback for invalid readings
-    if (dist == 0)
-        return readings[(index + HISTORY_SIZE - 1) % HISTORY_SIZE];
+    if (dist == std::numeric_limits<uint16_t>::max())
+        // Map eventual errors or max distances to the max allowed dist
+        dist = cc_smax;
 
     // Insert the current reading in the array, and increment index
     readings[index] = dist;
@@ -143,11 +144,11 @@ void send_note_from_dist(uint16_t dist) {
         }
 
         // Checks for far and near note
-        if (dist >= far.max && last_note != far.note) {
+        if (dist >= far.min && last_note != far.note) {
             send_note(far.note, 127, midi_channel);
             last_note = far.note;
         }
-        if (dist <= near.min && last_note != near.note) {
+        if (dist <= near.max && last_note != near.note) {
             send_note(near.note, 127, midi_channel);
             last_note = near.note;
         }
