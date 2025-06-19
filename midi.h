@@ -139,6 +139,9 @@ void send_note_from_dist(uint16_t dist) {
     } else {
         // send cc max once
         if (cc_inrange) {
+            if (debug_cc)
+                Serial.println("cc: " + String(cc_tmax));
+
             send_cc(1, cc_tmax, midi_channel);
             cc_inrange = false;
         }

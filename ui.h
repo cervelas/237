@@ -6,23 +6,34 @@
 #include "WiFiS3.h"
 
 void render_midi_ctrl(WiFiClient client) {
-    String tpl = F(
-        "<div>DEBUG <a href='/debug_cc'>CC</a>&nbsp;<a "
-        "href='/debug_sensor'>sensor</a>&nbsp;<a "
-        "href='/debug_raw'>raw</a>&nbsp;<a "
-        "href='/debug_midi'>midi</a>&nbsp;</div>"
-        "<form method='post' action='/midi'><fieldset>"
-        "<div class='float-right'><input type='submit' "
-        "value='Update'></div><h3>MIDI Control</h3>"
-        "<div>MIDI <b>{{connect_status}}</b>&nbsp;<a "
-        "href='/connect'>connect</a>&nbsp;<a href='/end'>end</a></div>"
-        "<div>SEND <b>{{midi_status}}</b><a href='/enable'>Enable</a>&nbsp;<a "
-        "href='/disable'>Disable</a></div>"
-        "<label for='cc_smin'>Remote IP Address {{remote_prefix}}</label>"
-        "<input type='number' id='remote_id' name='remote_id' "
-        "value='{{remote_id}}' min=0 max=255>"
-        "</fieldset></form><hr>"
-        "");
+    String tpl = F(                                                         //
+        "<div>DEBUG "                                                       //
+        "<a href='/debug_cc'>CC</a>&nbsp;"                                  //
+        "<a href='/debug_sensor'>sensor</a>&nbsp;"                          //
+        "<a href='/debug_raw'>raw</a>&nbsp;"                                //
+        "<a href='/debug_midi'>midi</a>&nbsp;"                              //
+        "</div>"                                                            //
+        "<form method='post' action='/midi'><fieldset>"                     //
+        "<div class='float-right'>"                                         //
+        "<input type='submit' value='Update'>"                              //
+        "</div>"                                                            //
+        "<h3>MIDI Control</h3>"                                             //
+        "<div>"                                                             //
+        "MIDI <b>{{connect_status}}</b>&nbsp;"                              //
+        "<a href='/connect'>connect</a>&nbsp;"                              //
+        "<a href='/end'>end</a>"                                            //
+        "</div>"                                                            //
+        "<div>"                                                             //
+        "SEND <b>{{midi_status}}</b>&nbsp;"                                 //
+        "<a href='/enable'>Enable</a>&nbsp;"                                //
+        "<a href='/disable'>Disable</a>"                                    //
+        "</div>"                                                            //
+        "<label for='cc_smin'>Remote IP Address {{remote_prefix}}</label>"  //
+        "<input type='number' id='remote_id' name='remote_id' "             //
+        "value='{{remote_id}}' min=0 max=255>"                              //
+        "</fieldset></form>"                                                //
+        "<hr>"                                                              //
+    );                                                                      //
 
     tpl.replace("{{localip}}", WiFi.localIP().toString());
     tpl.replace("{{remote_prefix}}", String(String(WiFi.localIP()[0]) + "." +
@@ -65,8 +76,6 @@ void midi_post_handler(String url, String name, String value) {
         if (name.compareTo("remote_id") == 0) {
             Serial.println("update remote id");
             midi_remote_id.set(atoi(value.c_str()));
-            // midi_end();
-            // midi_start();
         }
     }
 }

@@ -42,6 +42,7 @@ void sensor_setup() {
 
 void sensor_loop() {
     uint16_t dist = readDistance();
+    dist = filter_dist(dist);
     if (debug_raw)
         Serial.println("dist: " + String(dist));
 
