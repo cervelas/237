@@ -83,23 +83,31 @@ void midi_post_handler(String url, String name, String value) {
 void render_cc_ctrl(EEPROMStorage<uint16_t> smin, EEPROMStorage<uint16_t> smax,
                     EEPROMStorage<uint16_t> tmin, EEPROMStorage<uint16_t> tmax,
                     WiFiClient client) {
-    String tpl =
-        F("<form method='post' action='/cc'><fieldset>"
-          "<div class='float-right'><input type='submit' "
-          "value='Update'></div><h3>MIDI CC</h3>"
-          "<label for='cc_smin'>Source MIN CC</label>"
-          "<input type='number' id='cc_smin' name='cc_smin' "
-          "value='{{cc_smin}}' min=0 max=1000>"
-          "<label for='cc_smax'>Source MAX CC</label>"
-          "<input type='number' id='cc_smax' name='cc_smax' "
-          "value='{{cc_smax}}' min=0 max=1000>"
-          "<label for='cc_tmin'>Target MIN CC</label>"
-          "<input type='number' id='cc_tmin' name='cc_tmin' "
-          "value='{{cc_tmin}}' min=0 max=127>"
-          "<label for='cc_tmax'>Target MAX CC</label>"
-          "<input type='number' id='cc_tmax' name='cc_tmax' "
-          "value='{{cc_tmax}}' min=0 max=127>"
-          "</fieldset></form><hr>");
+    String tpl = F(                                    //
+        "<form method='post' action='/cc'><fieldset>"  //
+        "<div class='float-right'><input type='submit' "
+        "value='Update'></div>"  //
+        "<h3>MIDI CC</h3>"       //
+
+        "<label for='cc_smin'>Source MIN CC</label>"         //
+        "<input type='number' id='cc_smin' name='cc_smin' "  //
+        "value='{{cc_smin}}' min=0 max=1000>"                //
+
+        "<label for='cc_smax'>Source MAX CC</label>"         //
+        "<input type='number' id='cc_smax' name='cc_smax' "  //
+        "value='{{cc_smax}}' min=0 max=1000>"                //
+
+        "<label for='cc_tmin'>Target MIN CC</label>"         //
+        "<input type='number' id='cc_tmin' name='cc_tmin' "  //
+        "value='{{cc_tmin}}' min=0 max=127>"                 //
+
+        "<label for='cc_tmax'>Target MAX CC</label>"         //
+        "<input type='number' id='cc_tmax' name='cc_tmax' "  //
+        "value='{{cc_tmax}}' min=0 max=127>"                 //
+
+        "</fieldset></form>"  //
+        "<hr>"                //
+    );                        //
 
     tpl.replace("{{cc_smin}}", String(smin.get()));
     tpl.replace("{{cc_smax}}", String(smax.get()));
@@ -127,21 +135,29 @@ void cc_post_handler(String url, String name, String value) {
 
 void render_note_ctrl(int id, uint16_t trig_min, uint16_t trig_max,
                       uint16_t note, WiFiClient client) {
-    String tpl =
-        F("<form method='post' action='/note{{uid}}'><fieldset>"
-          "<div class='float-right'><input type='submit' "
-          "value='update'></div><h3>MIDI {{name}}</h3>"
-          "<input type='hidden' id='uid' name='uid' value='{{uid}}>"
-          "<label for='note'>Note</label>"
-          "<input type='number' id='note' name='note' value='{{note}}' "
-          "min=0 max=127>"
-          "<label for='trig_min'>MIN DIST</label>"
-          "<input type='number' id='trig_min' name='trig_min' "
-          "value='{{trig_min}}' min=0 max=500>"
-          "<label for='trig_max'>MAX DIST</label>"
-          "<input type='number' id='trig_max' name='trig_max' "
-          "value='{{trig_max}}' min=0 max=500>"
-          "</fieldset></form><hr>");
+    String tpl = F(                                             //
+        "<form method='post' action='/note{{uid}}'><fieldset>"  //
+        "<div class='float-right'><input type='submit' "
+        "value='update'></div>"   //
+        "<h3>MIDI {{name}}</h3>"  //
+
+        "<input type='hidden' id='uid' name='uid' value='{{uid}}'>"  //
+
+        "<label for='note'>Note</label>"  //
+        "<input type='number' id='note' name='note' value='{{note}}' min=0 "
+        "max=127>"  //
+
+        "<label for='trig_min'>MIN DIST</label>"  //
+        "<input type='number' id='trig_min' name='trig_min' "
+        "value='{{trig_min}}' min=0 max=500>"  //
+
+        "<label for='trig_max'>MAX DIST</label>"  //
+        "<input type='number' id='trig_max' name='trig_max' "
+        "value='{{trig_max}}' min=0 max=500>"  //
+
+        "</fieldset></form>"  //
+        "<hr>"                //
+    );                        //
 
     tpl.replace("{{uid}}", String(id));
     tpl.replace("{{name}}", String(id));
@@ -153,16 +169,22 @@ void render_note_ctrl(int id, uint16_t trig_min, uint16_t trig_max,
 }
 
 void render_near_note_ctrl(uint16_t trig, uint16_t note, WiFiClient client) {
-    String tpl =
-        F("<form method='post' action='/near_note'><fieldset>"
-          "<div class='float-right'><input type='submit' "
-          "value='update'></div><h3>MIDI NEAR NOTE</h3>"
-          "<label for='note'>Note</label>"
-          "<input type='number' id='note' name='note' value='{{note}}' "
-          "min=0 max=127>"
-          "<label for='trig'>MAX DIST</label>"
-          "<input type='number' id='trig' name='trig' value='{{trig}}'>"
-          "</fieldset></form><hr>");
+    String tpl = F(                                           //
+        "<form method='post' action='/near_note'><fieldset>"  //
+        "<div class='float-right'><input type='submit' "
+        "value='update'></div>"    //
+        "<h3>MIDI NEAR NOTE</h3>"  //
+
+        "<label for='note'>Note</label>"  //
+        "<input type='number' id='note' name='note' value='{{note}}' min=0 "
+        "max=127>"  //
+
+        "<label for='trig'>MAX DIST</label>"                            //
+        "<input type='number' id='trig' name='trig' value='{{trig}}'>"  //
+
+        "</fieldset></form>"  //
+        "<hr>"                //
+    );                        //
 
     tpl.replace("{{trig}}", String(trig));
     tpl.replace("{{note}}", String(note));
@@ -171,16 +193,22 @@ void render_near_note_ctrl(uint16_t trig, uint16_t note, WiFiClient client) {
 }
 
 void render_far_note_ctrl(uint16_t trig, uint16_t note, WiFiClient client) {
-    String tpl =
-        F("<form method='post' action='/far_note'><fieldset>"
-          "<div class='float-right'><input type='submit' "
-          "value='update'></div><h3>MIDI FAR NOTE</h3>"
-          "<label for='note'>Note</label>"
-          "<input type='number' id='note' name='note' value='{{note}}' "
-          "min=0 max=127>"
-          "<label for='trig'>MIN DIST</label>"
-          "<input type='number' id='trig' name='trig' value='{{trig}}'>"
-          "</fieldset></form><hr>");
+    String tpl = F(                                          //
+        "<form method='post' action='/far_note'><fieldset>"  //
+        "<div class='float-right'><input type='submit' "
+        "value='update'></div>"   //
+        "<h3>MIDI FAR NOTE</h3>"  //
+
+        "<label for='note'>Note</label>"  //
+        "<input type='number' id='note' name='note' value='{{note}}' min=0 "
+        "max=127>"  //
+
+        "<label for='trig'>MIN DIST</label>"                            //
+        "<input type='number' id='trig' name='trig' value='{{trig}}'>"  //
+
+        "</fieldset></form>"  //
+        "<hr>"                //
+    );                        //
 
     tpl.replace("{{trig}}", String(trig));
     tpl.replace("{{note}}", String(note));
