@@ -6,6 +6,8 @@
 
 VL53L1X sensor;
 
+const int alim5V = 13;
+
 uint16_t readDistance() {
     int dist = sensor.read() / 10;
 

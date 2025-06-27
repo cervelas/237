@@ -31,9 +31,16 @@ void render_midi_ctrl(WiFiClient client) {
         "<label for='cc_smin'>Remote IP Address {{remote_prefix}}</label>"  //
         "<input type='number' id='remote_id' name='remote_id' "             //
         "value='{{remote_id}}' min=0 max=255>"                              //
-        "</fieldset></form>"                                                //
-        "<hr>"                                                              //
-    );                                                                      //
+        "<h3>Sensor Parameters</h3>"                                        //
+        "<label for='note_min'>Minimum Distance</label>"                    //
+        "<input type='number' id='note_min' name='note_min' "
+        "value='{{note_min}}' min=0 max=1000>"            //
+        "<label for='note_max'>Maximum Distance</label>"  //
+        "<input type='number' id='note_max' name='note_max' "
+        "value='{{note_max}}' min=0 max=1000>"  //
+        "</fieldset></form>"                    //
+        "<hr>"                                  //
+    );                                          //
 
     tpl.replace("{{localip}}", WiFi.localIP().toString());
     tpl.replace("{{remote_prefix}}", String(String(WiFi.localIP()[0]) + "." +
@@ -49,6 +56,8 @@ void render_midi_ctrl(WiFiClient client) {
         tpl.replace("{{midi_status}}", "ENABLE");
     else
         tpl.replace("{{midi_status}}", "DISABLED");
+    tpl.replace("{{note_min}}", String(note_min.get()));
+    tpl.replace("{{note_max}}", String(note_max.get()));
 
     client.println(tpl);
 }
@@ -77,6 +86,11 @@ void midi_post_handler(String url, String name, String value) {
             Serial.println("update remote id");
             midi_remote_id.set(atoi(value.c_str()));
         }
+        if (name.compareTo("note_min") == 0)
+            note_min.set(atoi(value.c_str()));
+
+        if (name.compareTo("note_max") == 0)
+            note_max.set(atoi(value.c_str()));
     }
 }
 

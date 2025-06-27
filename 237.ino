@@ -21,11 +21,8 @@ EEPROMStorage<bool> debug_sensor(debug_cc.nextAddress(), false);
 EEPROMStorage<bool> debug_raw(debug_sensor.nextAddress(), false);
 EEPROMStorage<bool> debug_midi(debug_raw.nextAddress(), false);
 
-// EEPROMStorage<uint8_t> cc_avg(debug_midi.nextAddress(), 3);
-EEPROMStorage<uint16_t> cc_smin(debug_midi.nextAddress(), 30);
-EEPROMStorage<uint16_t> cc_smax(cc_smin.nextAddress(), 300);
-EEPROMStorage<uint16_t> cc_tmin(cc_smax.nextAddress(), 0);
-EEPROMStorage<uint16_t> cc_tmax(cc_tmin.nextAddress(), 127);
+EEPROMStorage<uint16_t> note_min(debug_midi.nextAddress(), 2);
+EEPROMStorage<uint16_t> note_max(note_min.nextAddress(), 150);
 
 typedef struct {
     uint16_t min;
@@ -44,7 +41,7 @@ typedef struct {
 
 #define NB_NOTES 10
 
-EEPROMStorage<Note> note1(cc_tmax.nextAddress(), {0, 0, 0});
+EEPROMStorage<Note> note1(note_max.nextAddress(), {0, 0, 0});
 EEPROMStorage<Note> note2(note1.nextAddress(), {0, 0, 0});
 EEPROMStorage<Note> note3(note2.nextAddress(), {0, 0, 0});
 EEPROMStorage<Note> note4(note3.nextAddress(), {0, 0, 0});
@@ -105,6 +102,10 @@ void setup() {
     debug_sensor = false;
     debug_raw = false;
     debug_midi = false;
+
+    pinMode(alim5V, OUTPUT);
+    digitalWrite(alim5V, LOW);
+    digitalWrite(alim5V, HIGH);
 
     Serial.begin(115200);
     log("Hello. i'm ");
