@@ -48,8 +48,6 @@ void wifi_setup_client() {
 
     wifi_connected = net_status == WL_CONNECTED;
 
-    set_matrix_text(WiFi.localIP().toString());
-
     Serial.println("Started WiFi client");
 }
 

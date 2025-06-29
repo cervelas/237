@@ -116,6 +116,8 @@ void setup() {
     printWiFiStatus();
     leds_setup();
     sensor_setup();
+    
+    set_matrix_text("ID" + String(_UID) + " CH" + String(_CHANNEL));
 }
 
 void loop() {
