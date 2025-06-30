@@ -129,7 +129,8 @@ void setup() {
 }
 
 void loop() {
-    leds_show();
+    if (millis() < 120000)
+        leds_show();
     wifi_client_loop();
     if (udp_connected.get() == true && midi_enable.get() == true)
         sensor_loop();
