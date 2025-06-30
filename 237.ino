@@ -110,11 +110,19 @@ void setup() {
     Serial.begin(115200);
     log("Hello. i'm ");
     logln(UID);
+
+    // Setup LED Matrix
+    leds_setup();
+
+    // Wifi Setup Phase
+    leds_wifi();
     wifi_setup_client();
     udp_setup();
     ui_setup();
     printWiFiStatus();
-    leds_setup();
+
+    // Sensor Setup Phase
+    leds_sensor();
     sensor_setup();
 
     set_matrix_text("ID" + String(UID) + " CH" + String(midi_channel));

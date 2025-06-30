@@ -3,6 +3,7 @@
 #include <Wire.h>
 
 #include "VL53L1X.h"
+#include "ledmatrix.h"
 
 VL53L1X sensor;
 
@@ -25,6 +26,7 @@ void sensor_setup() {
     sensor.setTimeout(500);
     if (!sensor.init()) {
         Serial.println("Failed to initialize VL53L1X Distance_Sensor!");
+        leds_error();
         while (1)
             ;
     }
@@ -40,6 +42,8 @@ void sensor_setup() {
     // inter-measurement period). This period should be at least as long as the
     // timing budget.
     sensor.startContinuous(50);
+
+    delay(1500);
 }
 
 void sensor_loop() {

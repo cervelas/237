@@ -23,6 +23,7 @@ void wifi_setup_client() {
     if (WiFi.status() == WL_NO_MODULE) {
         Serial.println("Communication with WiFi module failed!");
         // don't continue
+        leds_error();
         while (true)
             ;
     }
@@ -31,6 +32,7 @@ void wifi_setup_client() {
 
     if (fv < WIFI_FIRMWARE_LATEST_VERSION) {
         Serial.println("Please upgrade the firmware");
+        leds_error();
         while (true)
             ;
     }
@@ -39,21 +41,26 @@ void wifi_setup_client() {
     if (!dhcp)
         WiFi.config(client_ip);
 
-    while (net_status != WL_CONNECTED) {
+    uint8_t no_tries = 0;
+    while (net_status != WL_CONNECTED && no_tries < 5) {
         Serial.print("Attempting to connect to SSID: ");
-
         Serial.println(client_ssid);
-
-        Serial.print("With: ");
-
-        Serial.println(client_ip.toString());
+        Serial.println("Attempt: " + String(no_tries + 1));
 
         net_status = WiFi.begin(client_ssid, client_pass);
 
         delay(2000);
+        no_tries++;
     }
 
     wifi_connected = net_status == WL_CONNECTED;
+
+    if (net_status != WL_CONNECTED) {
+        Serial.println("Could not connect to WIFI");
+        leds_error();
+        while (true)
+            ;
+    }
 
     Serial.println("Started WiFi client");
 }
@@ -64,6 +71,7 @@ void wifi_setup_ap() {
     if (WiFi.status() == WL_NO_MODULE) {
         Serial.println("Communication with WiFi module failed!");
         // don't continue
+        leds_error();
         while (true)
             ;
     }
@@ -71,6 +79,7 @@ void wifi_setup_ap() {
     String fv = WiFi.firmwareVersion();
     if (fv < WIFI_FIRMWARE_LATEST_VERSION) {
         Serial.println("Please upgrade the firmware");
+        leds_error();
         while (true)
             ;
     }
@@ -85,6 +94,7 @@ void wifi_setup_ap() {
     if (net_status != WL_AP_LISTENING) {
         Serial.println("Creating access point failed");
         // don't continue
+        leds_error();
         while (true)
             ;
     }
