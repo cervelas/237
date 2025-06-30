@@ -10,12 +10,15 @@ char ap_pass[] =
 arduino::IPAddress ap_ip = IPAddress(10, 10, 1, UID);
 
 bool dhcp = false;
-IPAddress client_ip = IPAddress(192, 168, 2, _UID);
 
 int net_status = WL_IDLE_STATUS;
 
 void wifi_setup_client() {
     set_matrix_text("WIFI");
+
+    IPAddress client_ip = IPAddress(192, 168, 2, UID.get());
+
+    Serial.println("Client ip: " + client_ip.toString());
 
     if (WiFi.status() == WL_NO_MODULE) {
         Serial.println("Communication with WiFi module failed!");
@@ -40,6 +43,10 @@ void wifi_setup_client() {
         Serial.print("Attempting to connect to SSID: ");
 
         Serial.println(client_ssid);
+
+        Serial.print("With: ");
+
+        Serial.println(client_ip.toString());
 
         net_status = WiFi.begin(client_ssid, client_pass);
 

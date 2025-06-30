@@ -28,9 +28,18 @@ void render_midi_ctrl(WiFiClient client) {
         "<a href='/enable'>Enable</a>&nbsp;"                                //
         "<a href='/disable'>Disable</a>"                                    //
         "</div>"                                                            //
-        "<label for='cc_smin'>Remote IP Address {{remote_prefix}}</label>"  //
+        "<label for='cc_smin'>Remote IP Address {{subnet_prefix}}</label>"  //
         "<input type='number' id='remote_id' name='remote_id' "             //
         "value='{{remote_id}}' min=0 max=255>"                              //
+                                                                            //
+        "<label for='cc_smin'>Local IP Address {{subnet_prefix}}</label>"   //
+        "<input type='number' id='uid' name='uid' "                         //
+        "value='{{uid}}' min=0 max=255>"                                    //
+                                                                            //
+        "<label for='cc_smin'>MIDI Channel</label>"                         //
+        "<input type='number' id='midi_channel' name='midi_channel' "       //
+        "value='{{midi_channel}}' min=0 max=16>"                            //
+                                                                            //
         "<h3>Sensor Parameters</h3>"                                        //
         "<label for='note_min'>Minimum Distance</label>"                    //
         "<input type='number' id='note_min' name='note_min' "
@@ -43,10 +52,13 @@ void render_midi_ctrl(WiFiClient client) {
     );                                          //
 
     tpl.replace("{{localip}}", WiFi.localIP().toString());
-    tpl.replace("{{remote_prefix}}", String(String(WiFi.localIP()[0]) + "." +
+    tpl.replace("{{subnet_prefix}}", String(String(WiFi.localIP()[0]) + "." +
                                             String(WiFi.localIP()[1]) + "." +
                                             String(WiFi.localIP()[2]) + "."));
+
     tpl.replace("{{remote_id}}", String(midi_remote_id.get()));
+    tpl.replace("{{uid}}", String(UID.get()));
+    tpl.replace("{{midi_channel}}", String(midi_channel.get()));
     if (udp_connected)
         tpl.replace("{{connect_status}}", "CONNECTED");
     else
@@ -86,11 +98,21 @@ void midi_post_handler(String url, String name, String value) {
             Serial.println("update remote id");
             midi_remote_id.set(atoi(value.c_str()));
         }
+        if (name.compareTo("uid") == 0) {
+            Serial.println("update uid");
+            UID.set(atoi(value.c_str()));
+        }
+        if (name.compareTo("midi_channel") == 0) {
+            Serial.println("update midi channel");
+            midi_channel.set(atoi(value.c_str()));
+        }
         if (name.compareTo("note_min") == 0)
             note_min.set(atoi(value.c_str()));
 
         if (name.compareTo("note_max") == 0)
             note_max.set(atoi(value.c_str()));
+
+        set_matrix_text("ID" + String(UID) + " CH" + String(midi_channel));
     }
 }
 

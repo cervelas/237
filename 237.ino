@@ -13,8 +13,8 @@ char client_pass[] = WIFI_PASS;
 bool wifi_connected = false;
 
 // Storage for UI and midi
-uint8_t midi_channel = _CHANNEL;
-EEPROMStorage<uint8_t> UID(0, _UID);
+EEPROMStorage<uint8_t> midi_channel(0, 3);
+EEPROMStorage<uint8_t> UID(midi_channel.nextAddress(), 3);
 
 EEPROMStorage<bool> debug_cc(UID.nextAddress(), true);
 EEPROMStorage<bool> debug_sensor(debug_cc.nextAddress(), false);
@@ -116,8 +116,8 @@ void setup() {
     printWiFiStatus();
     leds_setup();
     sensor_setup();
-    
-    set_matrix_text("ID" + String(_UID) + " CH" + String(_CHANNEL));
+
+    set_matrix_text("ID" + String(UID) + " CH" + String(midi_channel));
 }
 
 void loop() {
