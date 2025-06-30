@@ -4,13 +4,6 @@
 #define WIFI_SSID "my_ssid"
 #define WIFI_PASS "my_pass"
 
-// Arduino Unique ID, must correspond to artwork number
-// used by :
-//    midi for default channel
-//    network for ipaddr
-#define _UID 3
-#define _CHANNEL 3
-
 #define SENSOR_APDS9960 1
 #define SENSOR_HMMD 2
 #define SENSOR_LD2410 4
