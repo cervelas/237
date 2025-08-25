@@ -1,17 +1,15 @@
 # 237
 237 Project
 
-# Installation
+## Installation
 This arduino project need thoses libs so far 
 
-- AppleMIDI by lathoub Version 3.2.0
 - ArduinoHttpServer by Sander van Woensel <sander@vanwoensel.me> Version 0.10.0 
-- movingAvg by Jack Christensen <jack.christensen@outlook.com> Version 2.3.2  
 - EEPROM-Storage by Daniel Porrey Version 2.0.1
 - MyLD2410 by Iavor Veltchev Version 1.2.3 
 - LED_Matrix Built-In by Arduino Version 1.1.0 
 
-# Architecture
+## Architecture
 
 - `237.ino` is the entrypoint, define ROM Storage and global vars.
 - `midi.h` setup and loop of MIDI part.
@@ -23,18 +21,29 @@ This arduino project need thoses libs so far
 
 On top of 237.ino you can choose whatever sensor support will be included by defining the SENSOR compilation var.
 
-# Sensors Support
+## Sensors Support
 - 9960
 - HMMD
+- LD2410
+- HCSR04
+- VL53L1X (Sensor used in the final product)
 
-# Development Setup PC
+## Development Setup PC
 
 - Arduino Uno R4 Wifi
 - Supported Sensor
 - Wifi Network
-- Client PC with rtpMidi software and Midiview Software
+- Client PC with Python
 
-## rtpMidi Setup
-- Create a Session with a name
-- Create a remote Peer with the arduino ip address
-- Enable the session and connect the arduino
+## Configuration
+
+Copy the `config.h.example` file, select compilation parameters and upload to Arduino.
+
+```bash
+cp config.h.example config.h
+```
+
+Parameters:
+
+- WiFi SSID and Password
+- Sensor selection (Use the corresponding sensor as the `SENSOR` flag)
